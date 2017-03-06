@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapper namespace = "TwitterWordBO">
+   
+   <resultMap id = "wordResult" type = "TwitterWordBO">
+	   <result property = "id" column = "id"/>
+	   <result property = "state" column = "state"/>
+	   <result property = "word" column = "word"/>
+	   <result property = "occurances" column = "occurances"/>
+	   <result property = "time" column = "time"/>
+	</resultMap>
+
+   <select id = "GetWordsDuringTime" resultMap = "result">
+   		SELECT * FROM WORDS WHERE time = #{time}; 
+   </select>
+</mapper> 

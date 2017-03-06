@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapper namespace = "TwitterTimeBO">
+   
+   <resultMap id = "timeResult" type = "TwitterTimeBO">
+	   <result property = "id" column = "ID"/>
+	   <result property = "startTime" column = "endTime"/>
+	   <result property = "endTime" column = "startTime"/>
+	</resultMap>
+
+   <select id = "GetTimeBetween" resultMap = "result">
+   		SELECT * FROM WORDS; 
+   </select>
+</mapper> 
