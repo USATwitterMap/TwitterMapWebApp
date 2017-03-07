@@ -7,7 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 public class TwitterDataDao {
 	
 	public List<TwitterWordBO> GetOccurancesByTime(TwitterWordBO word) {
-		SqlSession session = ConnectionFactory.GetFactory();
+		SqlSession session = ConnectionFactory.GetFactory().openSession();
 		List<TwitterWordBO> results = null;
 		try {
 			results = session.selectList("TwitterWordMapper.GetWordsDuringTimeByState", word);
@@ -20,7 +20,7 @@ public class TwitterDataDao {
 	}
 	
 	public TwitterTimeBO GetTimeBetween(Timestamp requestedTime) {
-		SqlSession session = ConnectionFactory.GetFactory();
+		SqlSession session = ConnectionFactory.GetFactory().openSession();
 		TwitterTimeBO results = null;
 		try {
 			results = session.selectOne("TwitterTimeMapper.GetTimeBetween", requestedTime);
