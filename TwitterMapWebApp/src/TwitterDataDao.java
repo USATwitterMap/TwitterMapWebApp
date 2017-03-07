@@ -6,11 +6,6 @@ import org.apache.ibatis.session.SqlSession;
 
 public class TwitterDataDao {
 	
-	private SqlSession session;
-	public TwitterDataDao() throws IOException {
-		session = ConnectionFactory.GetFactory();
-	}
-
 	public List<TwitterWordBO> GetOccurancesByTime(TwitterWordBO word) {
 		SqlSession session = ConnectionFactory.GetFactory();
 		List<TwitterWordBO> results = null;
