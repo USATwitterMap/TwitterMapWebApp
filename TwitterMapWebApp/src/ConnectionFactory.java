@@ -8,12 +8,14 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 public class ConnectionFactory 
 {
-	public static SqlSession GetFactory() throws IOException 
+	private static SqlSessionFactory sessionFactory = null;
+	public static SqlSessionFactory GetFactory() throws IOException 
 	{
-		String resource = "resources/mybatis-configuration.xml";
-		InputStream inputStream = Resources.getResourceAsStream(resource);
-		SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-		
-		return sqlSessionFactory.openSession();
+		if(sessionFactory == null) {
+			String resource = "resources/mybatis-configuration.xml";
+			InputStream inputStream = Resources.getResourceAsStream(resource);
+			sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+		}
+		return sessionFactory;
 	}
 }
