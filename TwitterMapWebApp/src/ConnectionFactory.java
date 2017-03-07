@@ -10,7 +10,7 @@ public class ConnectionFactory
 {
 	public static SqlSession GetFactory() throws IOException 
 	{
-		String resource = "org/mybatis/example/mybatis-config.xml";
+		String resource = "resources/mybatis-configuration.xml";
 		InputStream inputStream = Resources.getResourceAsStream(resource);
 		SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 		
