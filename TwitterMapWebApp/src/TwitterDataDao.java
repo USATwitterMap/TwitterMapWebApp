@@ -12,10 +12,28 @@ public class TwitterDataDao {
 	}
 
 	public List<TwitterWordBO> GetOccurancesByTime(TwitterWordBO word) {
-		return session.selectList("TwitterWordMapper.GetWordsDuringTimeByState", word);
+		SqlSession session = ConnectionFactory.GetFactory();
+		List<TwitterWordBO> results = null;
+		try {
+			results = session.selectList("TwitterWordMapper.GetWordsDuringTimeByState", word);
+		}
+		finally {
+			session.close();
+		}
+			
+		return results;
 	}
 	
 	public TwitterTimeBO GetTimeBetween(Timestamp requestedTime) {
-		return session.selectOne("TwitterTimeMapper.GetTimeBetween", requestedTime);
+		SqlSession session = ConnectionFactory.GetFactory();
+		TwitterTimeBO results = null;
+		try {
+			results = session.selectOne("TwitterTimeMapper.GetTimeBetween", requestedTime);
+		}
+		finally {
+			session.close();
+		}
+			
+		return results;
 	}
 }
