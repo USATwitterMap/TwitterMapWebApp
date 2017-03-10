@@ -10,7 +10,7 @@ public class TwitterMapVO {
 	
 	private int occurances;
 	
-	private int state;
+	private String state;
 	
 	public String getKeyword() {
 		return keyword;
@@ -31,10 +31,10 @@ public class TwitterMapVO {
 	public void setOccurances(int occurances) {
 		this.occurances = occurances;
 	}
-	public int getState() {
+	public String getState() {
 		return state;
 	}
-	public void setState(int state) {
+	public void setState(String state) {
 		this.state = state;
 	}
 	

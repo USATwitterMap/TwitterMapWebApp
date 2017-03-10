@@ -49,10 +49,21 @@ public class SearchWordsController {
       public String searchWords(@ModelAttribute("SpringWeb")TwitterMapVO twitteMapVO, ModelMap model) 
 	   {
 		  //convert to BO, search using DAO, convert to VO and display
-		   
+		  TwitterWord twitterMapBo = TwitterWordBoVOConverter.getBo(twitteMapVO);
+		  List<TwitterWord> twitterMapResultsBo = null;
+		  try 
+		  {
+			TwitterTime time = wordsDao.GetTimeBetween(java.sql.Timestamp.valueOf("2017-03-4 19:09:10.0"));
+			twitterMapBo.setTime(time.getId());
+			twitterMapResultsBo = wordsDao.GetOccurancesByTime(twitterMapBo);
+		  }
+		  catch (Exception e) 
+		  {
+				
+		  }
+		  TwitterMapVO results = TwitterWordBoVOConverter.getVo(twitterMapResultsBo.get(0));
 		  
-	      model.addAttribute("keyword", twitteMapVO.getKeyword());
-	      model.addAttribute("date", twitteMapVO.getDate());      
+	      model.addAttribute("results", results);
 	      return "twitterWordResult";
 	   }
 	

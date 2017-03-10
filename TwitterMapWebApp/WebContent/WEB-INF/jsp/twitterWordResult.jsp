@@ -9,11 +9,15 @@
       <table>
          <tr>
             <td>Keyword</td>
-            <td>${keyword}</td>
+            <td>${results.keyword}</td>
          </tr>
          <tr>
-            <td>Date</td>
-            <td>${date}</td>
+            <td>State</td>
+            <td>${results.state}</td>
+         </tr>
+         <tr>
+            <td>Occurances</td>
+            <td>${results.occurances}</td>
          </tr>
       </table>  
    </body>
