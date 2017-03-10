@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace = "TwitterWordMapper">
    
-   <resultMap id = "wordResult" type = "TwitterWordBO">
+   <resultMap id = "wordResult" type = "dao.TwitterWord">
 	   <result property = "id" column = "id"/>
 	   <result property = "state" column = "state"/>
 	   <result property = "word" column = "word"/>
@@ -10,7 +10,7 @@
 	   <result property = "time" column = "time"/>
 	</resultMap>
 
-   <select id = "GetWordsDuringTimeByState" resultType="TwitterWordBO">
+   <select id = "GetWordsDuringTimeByState" resultType="dao.TwitterWord">
    		SELECT state, SUM(occurances) as occurances FROM 
    		Words WHERE time = #{time} AND word = #{word}
    		GROUP BY state ORDER BY state; 

@@ -1,6 +1,7 @@
+package dao;
 import java.sql.Timestamp;
 
-public class TwitterTimeBO 
+public class TwitterTime 
 {
 	private int id;
 	private Timestamp startTime;

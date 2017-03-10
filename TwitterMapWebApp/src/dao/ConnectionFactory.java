@@ -1,3 +1,4 @@
+package dao;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -14,7 +15,7 @@ public class ConnectionFactory
 		if(sessionFactory == null) {
 			String resource = "resources/mybatis-configuration.xml";
 			InputStream inputStream = Resources.getResourceAsStream(resource);
-			sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+			sessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 		}
 		return sessionFactory;
 	}

@@ -1,4 +1,5 @@
-public class TwitterWordBO
+package dao;
+public class TwitterWord
 {
    private int id;
    private String state;
