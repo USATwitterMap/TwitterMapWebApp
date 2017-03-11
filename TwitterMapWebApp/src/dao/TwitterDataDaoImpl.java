@@ -44,4 +44,24 @@ public class TwitterDataDaoImpl implements TwitterDataDao {
 			
 		return results;
 	}
+
+	@Override
+	public List<TwitterTime> GetTimeRange() {
+		SqlSession session = null;
+		List<TwitterTime> results = null;
+		try {
+			session = ConnectionFactory.GetFactory().openSession();
+			results = session.selectList("TwitterTimeMapper.GetTimeRange");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally {
+			if(session != null) {
+				session.close();
+			}
+		}
+			
+		return results;
+	}
 }

@@ -11,4 +11,8 @@
    <select id = "GetTimeBetween" resultMap = "timeResult">
    		SELECT * FROM Times where startTime &lt; #{requestedTime} AND endTime &gt; #{requestedTime}; 
    </select>
+   
+   <select id = "GetTimeRange" resultType="dao.TwitterTime">
+   		SELECT * FROM Times where startTime = (SELECT MIN(startTime) FROM Times);
+   </select>
 </mapper> 

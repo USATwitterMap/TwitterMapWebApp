@@ -19,36 +19,21 @@ public class SearchWordsController {
 
 	@Autowired
 	private TwitterDataDao wordsDao;
-		/*	
-	@RequestMapping(value="welcome.do", method = RequestMethod.GET)
-	public ModelAndView WordsConnectAttempt(TwitterMapVO twitterMapVO)
-	{
-		System.out.println("hello");
-		TwitterWord word = new TwitterWord();
-		word.setTime(260);
-		word.setWord("you");
-		TwitterTime time = null;
-		List<TwitterWord> words = null;
-		try {
-		time = wordsDao.GetTimeBetween(java.sql.Timestamp.valueOf("2017-03-4 19:09:10.0"));
-		words = wordsDao.GetOccurancesByTime(word);
-		}
-		catch (Exception e) {
-			
-		}
-		String debug = "";
-		return new ModelAndView("welcome", "message", "Brett");
-	}
-	*/
+
 	@RequestMapping(value = "twitterWordSearch", method = RequestMethod.GET)
 	   public ModelAndView twitterWordSearch() {
-	      return new ModelAndView("twitterWordSearch", "command", new TwitterMapVO());
+			TwitterMapVO vo = new TwitterMapVO();
+			List<TwitterTime> times = wordsDao.GetTimeRange();
+			vo.setEarliestDate(times.get(0).getStartTime());
+			vo.setLatestDate(times.get(0).getEndTime());
+			return new ModelAndView("twitterWordSearch", "command", vo);
 	   }
 	
 	   @RequestMapping(value = "searchWords", method = RequestMethod.POST)
       public String searchWords(@ModelAttribute("SpringWeb")TwitterMapVO twitteMapVO, ModelMap model) 
 	   {
 		  //convert to BO, search using DAO, convert to VO and display
+
 		  TwitterWord twitterMapBo = TwitterWordBoVOConverter.getBo(twitteMapVO);
 		  List<TwitterWord> twitterMapResultsBo = null;
 		  try 
