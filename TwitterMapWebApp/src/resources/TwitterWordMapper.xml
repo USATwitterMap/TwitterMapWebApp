@@ -11,8 +11,7 @@
 	</resultMap>
 
    <select id = "GetWordsDuringTimeByState" resultType="dao.TwitterWord">
-   		SELECT state, SUM(occurances) as occurances FROM 
-   		Words WHERE time = #{time} AND word = #{word}
-   		GROUP BY state ORDER BY state; 
+   		SELECT state, occurances FROM 
+   		Words WHERE time = #{time} AND word = #{word};
    </select>
 </mapper> 

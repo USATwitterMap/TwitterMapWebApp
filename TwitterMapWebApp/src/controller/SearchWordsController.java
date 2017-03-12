@@ -5,11 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import dao.*;
+import view.TestObj;
 import view.TwitterMapVO;
 
 @Controller
@@ -17,13 +21,21 @@ public class SearchWordsController {
 
 	@Autowired
 	private TwitterDataDao wordsDao;
-
+	
+	@RequestMapping(value = "twitterAjax", method = RequestMethod.POST)
+	@ResponseBody
+	public TestObj twitterAjax(@RequestBody TestObj search )
+	{
+		System.out.println("debug");
+		return search;
+	}
+	
 	@RequestMapping(value = "twitterWordSearch", method = RequestMethod.GET)
-	   public ModelAndView twitterWordSearch() {
+	   public ModelAndView twitterWordSearch(@ModelAttribute("SpringWeb")TwitterMapVO twitterMapVO) {
 			TwitterMapVO vo = new TwitterMapVO();
 			List<TwitterTime> times = wordsDao.GetTimeRange();
 			vo.setEarliestDate(times.get(0).getStartTime());
-			vo.setLatestDate(times.get(0).getEndTime());
+			vo.setLatestDate(times.get(1).getEndTime());
 			return new ModelAndView("twitterWordSearch", "command", vo);
 	   }
 	
@@ -38,7 +50,7 @@ public class SearchWordsController {
 		  {
 			TwitterTime time = wordsDao.GetTimeBetween(java.sql.Timestamp.valueOf("2017-03-4 19:09:10.0"));
 			twitterMapBo.setTime(time.getId());
-			twitterMapResultsBo = wordsDao.GetOccurancesByTime(twitterMapBo);
+			twitterMapResultsBo = wordsDao.GetOccurances(twitterMapBo);
 		  }
 		  catch (Exception e) 
 		  {

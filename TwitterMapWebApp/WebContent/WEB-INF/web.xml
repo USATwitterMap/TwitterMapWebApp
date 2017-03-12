@@ -25,4 +25,9 @@
         <servlet-name>springapp</servlet-name>
         <url-pattern>/searchWords/*</url-pattern>
     </servlet-mapping>
+     <servlet-mapping>
+        <servlet-name>springapp</servlet-name>
+        <url-pattern>/twitterAjax/*</url-pattern>
+    </servlet-mapping>
+    
 </web-app>

@@ -7,7 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 
 public class TwitterDataDaoImpl implements TwitterDataDao {
 	
-	public List<TwitterWord> GetOccurancesByTime(TwitterWord word) {
+	public List<TwitterWord> GetOccurances(TwitterWord word) {
 		SqlSession session = null;
 		List<TwitterWord> results = null;
 		try {
