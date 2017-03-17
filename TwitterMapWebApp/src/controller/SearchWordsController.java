@@ -40,8 +40,8 @@ public class SearchWordsController {
 			StateLocations stateLoc = StateLocations.FindLatLong(result.getState());
 			MapMarker marker = new MapMarker();
 			marker.setDelay((int)((timeLeft / occurancesAdjusted) - ((timeLeft / occurancesAdjusted) / (double)2)));
-			marker.setLatitude(stateLoc.getLatitudeMin());
-			marker.setLongitude(stateLoc.getLongitudeMin());
+			marker.setLatitude((stateLoc.getLatitudeMax() + stateLoc.getLatitudeMin()) / 2);
+			marker.setLongitude((stateLoc.getLongitudeMax() + stateLoc.getLongitudeMin()) / 2);
 			markers.add(marker);
 		}
 		return markers;
