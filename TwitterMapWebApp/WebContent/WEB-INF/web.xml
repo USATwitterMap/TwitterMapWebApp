@@ -18,12 +18,7 @@
   </servlet>  
 	<servlet-mapping>
         <servlet-name>springapp</servlet-name>
-        <url-pattern>/twitterWordSearch/*</url-pattern>
-    </servlet-mapping>
-    
-     <servlet-mapping>
-        <servlet-name>springapp</servlet-name>
-        <url-pattern>/searchWords/*</url-pattern>
+        <url-pattern>/twitterTimeWindow/*</url-pattern>
     </servlet-mapping>
      <servlet-mapping>
         <servlet-name>springapp</servlet-name>

@@ -1,5 +1,5 @@
 <nav>
      <ul>
-        <li class="current"><a href="twitterWordSearch">Home</a></li>
+        <li class="current"><a href="twitterTimeWindow">Home</a></li>
       </ul>                
 </nav>

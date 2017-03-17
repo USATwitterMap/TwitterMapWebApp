@@ -19,16 +19,47 @@
 		}
 	   </style> 
 	   <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+	   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=KEY&sensor=false"></script>
+	   
 	   <script>
+	   
+	   var map;
+		function initialize() {
+		  var mapOptions = {
+		    zoom: 3,
+			clickableIcons: false,
+			mapTypeControl: false,
+			streetViewControl: false,
+		    center: new google.maps.LatLng(39.8282, -98.5795)
+		  };
+		  map = new google.maps.Map(document.getElementById('map-canvas'),
+		      mapOptions);
+		}
+		
+		google.maps.event.addDomListener(window, 'load', initialize);
+		
 		   function updateTextInput(val, startTime, endTime) {
 			   currentDateValue = (endTime - startTime) * val / 1000 + startTime;
 			   		var d = new Date(currentDateValue);
 			   		document.getElementById('textInput').innerHTML=d; 
 		        }
+		   function addDynamicMarker(location) {
+			    var marker = new google.maps.Marker({
+			        position: location,
+			        map: map,
+			        draggable: false,
+			        optimized:false, // <-- required for animated gif
+			        icon: "dot.gif"
+			    });
+			    setTimeout(function () {
+			        marker.setMap(null);
+			        delete marker;
+			    }, 300);
+			    return marker;
+			}
 		   
 		   function testAjax() {
-			   document.getElementById('textInput').innerHTML="starting"; 
-			   var obj = { "id":"hello" };
+			   var obj = { "keyword": document.getElementById('keywordTxt').innerHTML, "date": this.currentDateValue };
 			   
 			   $.ajax({
 		             	 type: "POST",
@@ -41,14 +72,21 @@
 			                 'Content-Type': 'application/json' 
 			             },
 			             timeout: 1000,
-			             done: function () {
-			            	 document.getElementById('textInput').innerHTML="success";
+			             success: function (data) {
+			            	 var dataArray = data;
+			            	 var arrayLength = dataArray.length;
+			            	 for (var i = 0; i < arrayLength; i++) {
+			            		 (function(i) {
+			            			 var delay = dataArray[i].delay;
+			            			 this.markerAnimations.push(setInterval(function() {
+			            		            addDynamicMarker(new google.maps.LatLng(dataArray[i].longitude, dataArray[i].latitude));
+			            		        }, delay))
+			            		    })(i);
+			            	 }
 			             },
 			             fail: function () {
-			            	 document.getElementById('textInput').innerHTML="error";
 			             },
 			             always : function() { 
-			            	 document.getElementById('textInput').innerHTML="always";
 			             }
 			             
 				});
@@ -59,9 +97,14 @@
 		   var tickWeight;
 		   var currentDateValue;
 		   var rangeAnimation;
+		   var markerAnimations = [];
 		   
 		   function animateTimeSlider(startTime, endTime) {
 			   if(document.getElementById('PlayPauseButton').value == "Play") {
+				   this.markerAnimations = [];
+				   var tickerVal = document.getElementById('timeSlider').value;
+				   updateTextInput(tickerVal, startTime, endTime)
+				   testAjax();
 				   var val = document.getElementById('timeSlider').value;
 				   this.pastDateTime = startTime;
 				   this.windowDateTime = (endTime - startTime);
@@ -73,6 +116,9 @@
 			   else 
 			   {
 				   clearInterval(this.rangeAnimation);
+				   for (var i = 0; i < this.markerAnimations.length; i++) {
+					   clearInterval(this.markerAnimations[i]);
+	            	}
 				   document.getElementById('PlayPauseButton').value="Play";
 			   }
 			}
@@ -90,30 +136,26 @@
 	   </script>  
    </head>
    <body>
-   test 14
-      <form:form id="wordSearchForm" method = "POST" action = "searchWords">
-         <table class="box">
-           	<tr class="inner_element">
-               	<td colspan="3"><form:label path = "keyword">${results.occurances} Keyword: </form:label><form:input path = "keyword" /></td>
-            </tr>
-            <tr class="inner_element">
-            	<td colspan="3"> <img src="USA.svg" height="75%" width="75%"/></td>
-			</tr>
-            <tr class="inner_element">
-            	<td><form:label path = "earliestDate">${command.earliestDate}</form:label></td>
-               	<td><form:input id="timeSlider" class="slider-width100" type="range" path="date" min="0" max="1000" oninput="updateTextInput(this.value, ${command.earliestDate.time}, ${command.latestDate.time});" /></td>
-               	<td><form:label path = "earliestDate">${command.latestDate}</form:label></td>
-            </tr>
-            <tr class="inner_element">
-            	<td colspan="3"><label id="textInput"></label></td>
-            </tr>
-            <tr class="inner_element">
-               	<td colspan="3"><input type = "submit" value = "Search"/></td>
-            </tr>
-         </table>          
-      </form:form>
-      <input id="PlayPauseButton" type="button" value="Play" onclick="animateTimeSlider(${command.earliestDate.time}, ${command.latestDate.time})" /> 
-      <input id="TEstAjaxButton" type="button" value="testAjax" onclick="testAjax()" />
+        <table class="box">
+          	<tr class="inner_element">
+              	<td colspan="3"><label id = "keywordTxt">Keyword: </label><input id="keywordInput"/></td>
+           </tr>
+           <tr class="inner_element">
+           	<td colspan="3"><div id="map-canvas" style="height:500px; width:100%"></div></td>
+		</tr>
+           <tr class="inner_element">
+           	<td><label>${command.earliestDate}</label></td>
+              	<td><input id="timeSlider" class="slider-width100" type="range"  min="0" max="1000" oninput="updateTextInput(this.value, ${command.earliestDate.time}, ${command.latestDate.time});" /></td>
+              	<td><label>${command.latestDate}</label></td>
+           </tr>
+           <tr class="inner_element">
+           	<td colspan="3"><label id="textInput"></label></td>
+           </tr>
+           <tr class="inner_element">
+              	<td colspan="3"><input id="PlayPauseButton" type="button" value="Play" onclick="animateTimeSlider(${command.earliestDate.time}, ${command.latestDate.time})" /> </td>
+           </tr>
+        </table> 
+         <input id="TEstAjaxButton" type="button" value="testAjax" onclick="testAjax()" />
    </body>
    
 </html>
