@@ -19,7 +19,7 @@
 		}
 	   </style> 
 	   <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-	   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=KEY&sensor=false"></script>
+	   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCd9uxfx1yJarUMlvGVOTNEhiDZHCKbEvU&sensor=false"></script>
 	   
 	   <script>
 	   
@@ -43,13 +43,22 @@
 			   		var d = new Date(currentDateValue);
 			   		document.getElementById('textInput').innerHTML=d; 
 		        }
+		   var image = {
+				    url: 'dot.gif',
+				    // This marker is 128 pixels wide by 128 pixels high.
+				    size: new google.maps.Size(128, 128),
+				    // The origin for this image is (0, 0).
+				    origin: new google.maps.Point(0, 0),
+				    // The anchor for this image is the center of the image at 64-64
+				    anchor: new google.maps.Point(64, 64)
+				  };
 		   function addDynamicMarker(location) {
 			    var marker = new google.maps.Marker({
 			        position: location,
 			        map: map,
 			        draggable: false,
 			        optimized:false, // <-- required for animated gif
-			        icon: "dot.gif"
+			        icon: image
 			    });
 			    setTimeout(function () {
 			        marker.setMap(null);
