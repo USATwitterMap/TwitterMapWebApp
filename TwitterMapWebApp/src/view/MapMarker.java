@@ -2,6 +2,7 @@ package view;
 
 public class MapMarker {
 	private int delay;
+	private int counter;
 	private double latitude;
 	private double longitude;
 	public int getDelay() {
@@ -21,5 +22,11 @@ public class MapMarker {
 	}
 	public void setLatitude(double latitude) {
 		this.latitude = latitude;
+	}
+	public int getCounter() {
+		return counter;
+	}
+	public void setCounter(int counter) {
+		this.counter = counter;
 	}
 }

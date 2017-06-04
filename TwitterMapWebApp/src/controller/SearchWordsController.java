@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import dao.*;
 import view.MapMarker;
 import view.TwitterTimeWindow;
+import view.TwitterWordData;
 import view.TwitterWordQuery;
 
 @Controller
@@ -25,26 +26,37 @@ public class SearchWordsController {
 	
 	@RequestMapping(value = "twitterAjax", method = RequestMethod.POST)
 	@ResponseBody
-	public List<MapMarker> twitterAjax(@RequestBody TwitterWordQuery search )
+	public TwitterWordData twitterAjax(@RequestBody TwitterWordQuery search )
 	{
+		//prepare return structure
+		TwitterWordData wordQueryData = new TwitterWordData();
+		wordQueryData.setMarkers(new ArrayList<MapMarker>());
+		wordQueryData.setNextTime(1000);
+		
+		//get word results from database
 		TwitterTime time = wordsDao.GetTimeBetween(new Timestamp(search.getDate()));
-		TwitterWord wordQuery = new TwitterWord();
-		wordQuery.setTime(time.getId());
-		wordQuery.setWord(search.getKeyword());
-		List<TwitterWord> wordQueryResults = wordsDao.GetOccurances(wordQuery);
-		List<MapMarker> markers = new ArrayList<MapMarker>();
-		for(TwitterWord result : wordQueryResults) {
-			double timeLeft = time.getEndTime().getTime() - search.getDate();
-			double windowSize = time.getEndTime().getTime()  - time.getStartTime().getTime();
-			double occurancesAdjusted = (((double)1 - (timeLeft/ windowSize)) * (double)result.getOccurances()) + 1;
-			StateLocations stateLoc = StateLocations.FindLatLong(result.getState());
-			MapMarker marker = new MapMarker();
-			marker.setDelay((int)((timeLeft / occurancesAdjusted) - ((timeLeft / occurancesAdjusted) / (double)2)));
-			marker.setLatitude((stateLoc.getLatitudeMax() + stateLoc.getLatitudeMin()) / 2);
-			marker.setLongitude((stateLoc.getLongitudeMax() + stateLoc.getLongitudeMin()) / 2);
-			markers.add(marker);
+		if(time.getEndTime() != null) {
+			TwitterWord wordQuery = new TwitterWord();
+			wordQuery.setTime(time.getId());
+			wordQuery.setWord(search.getKeyword());
+			List<TwitterWord> wordQueryResults = wordsDao.GetOccurances(wordQuery);
+			
+			//add the ending time for this slice of data to result
+			wordQueryData.setNextTime(time.getEndTime().getTime());
+	
+			//cycle and add to result
+			for(TwitterWord result : wordQueryResults) {
+				double timeLeft = time.getEndTime().getTime() - search.getDate();
+				StateLocations stateLoc = StateLocations.FindLatLong(result.getState());
+				MapMarker marker = new MapMarker();
+				marker.setCounter(result.getOccurances());
+				marker.setDelay((int)(timeLeft / (result.getOccurances() + 1)));
+				marker.setLatitude((stateLoc.getLatitudeMax() + stateLoc.getLatitudeMin()) / 2);
+				marker.setLongitude((stateLoc.getLongitudeMax() + stateLoc.getLongitudeMin()) / 2);
+				wordQueryData.getMarkers().add(marker);
+			}
 		}
-		return markers;
+		return wordQueryData;
 	}
 	
 	@RequestMapping(value = "twitterTimeWindow", method = RequestMethod.GET)

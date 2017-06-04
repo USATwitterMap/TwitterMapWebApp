@@ -82,16 +82,28 @@
 			             },
 			             timeout: 1000,
 			             success: function (data) {
-			            	 var dataArray = data;
-			            	 var arrayLength = dataArray.length;
+			            	 var twitterData = data;
+			            	 var arrayLength = twitterData.markers.length;
 			            	 for (var i = 0; i < arrayLength; i++) {
 			            		 (function(i) {
-			            			 var delay = dataArray[i].delay;
+			            			 var delay = twitterData.markers[i].delay;
+			            			 var counter = twitterData.markers[i].counter;
 			            			 this.markerAnimations.push(setInterval(function() {
-			            		            addDynamicMarker(new google.maps.LatLng(dataArray[i].longitude, dataArray[i].latitude));
+			            				 if(counter > 0)
+			            		            addDynamicMarker(new google.maps.LatLng(twitterData.markers[i].longitude, twitterData.markers[i].latitude));
+			            					counter--;
 			            		        }, delay))
 			            		    })(i);
 			            	 }
+			            	 refreshMarkers = setTimeout(function() {
+		            	 		for (var i = 0; i < this.markerAnimations.length; i++) {
+		     					   clearInterval(this.markerAnimations[i]);
+		     	            	}
+		            	 		while(currentDateValue < twitterData.nextTime) {
+		            	 			incrementTime()
+	            	 			}
+		            		 	testAjax();
+            				}, twitterData.nextTime - currentDateValue);
 			             },
 			             fail: function () {
 			             },
@@ -106,6 +118,7 @@
 		   var tickWeight;
 		   var currentDateValue;
 		   var rangeAnimation;
+		   var refreshMarkers;
 		   var markerAnimations = [];
 		   
 		   function animateTimeSlider(startTime, endTime) {
@@ -124,6 +137,7 @@
 			   }
 			   else 
 			   {
+				   clearInterval(this.refreshMarkers);
 				   clearInterval(this.rangeAnimation);
 				   for (var i = 0; i < this.markerAnimations.length; i++) {
 					   clearInterval(this.markerAnimations[i]);

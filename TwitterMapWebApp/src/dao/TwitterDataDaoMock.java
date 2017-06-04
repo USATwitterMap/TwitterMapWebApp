@@ -20,7 +20,18 @@ public class TwitterDataDaoMock implements TwitterDataDao {
 			wordResults.get(wordResults.size() - 1).setWord(word.getWord());
 			wordResults.get(wordResults.size() - 1).setTime(word.getTime());
 			wordResults.get(wordResults.size() - 1).setState(aState.getStateAbbr());
-			wordResults.get(wordResults.size() - 1).setOccurances((int)(Math.random() * (double)20));
+			if(word.getTime() == 1) 
+			{
+				wordResults.get(wordResults.size() - 1).setOccurances((int)(Math.random() * (double)30));
+			}
+			else if(word.getTime() == 2) 
+			{
+				wordResults.get(wordResults.size() - 1).setOccurances((int)(Math.random() * (double)30));
+			}
+			else if(word.getTime() == 3) 
+			{
+				wordResults.get(wordResults.size() - 1).setOccurances((int)(Math.random() * (double)30));
+			}
 		}
 		
 		return wordResults;
@@ -37,7 +48,7 @@ public class TwitterDataDaoMock implements TwitterDataDao {
 		TwitterTime thirdTime = new TwitterTime();
 		thirdTime.setStartTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:50.1")); 
 		thirdTime.setEndTime(java.sql.Timestamp.valueOf("2017-03-4 19:10:10.1")); 
-		firstTime.setId(2);
+		thirdTime.setId(2);
 		
 		timeRange.add(firstTime);
 		timeRange.add(thirdTime);
@@ -48,22 +59,22 @@ public class TwitterDataDaoMock implements TwitterDataDao {
 	public TwitterTime GetTimeBetween(Timestamp requestedTime) {
 		
 		TwitterTime time = new TwitterTime();
-		if(requestedTime.after(java.sql.Timestamp.valueOf("2017-03-4 19:09:10.1")) && requestedTime.before(java.sql.Timestamp.valueOf("2017-03-4 19:09:30.1")))
+		if(requestedTime.after(java.sql.Timestamp.valueOf("2017-03-4 19:09:10.0")) && requestedTime.before(java.sql.Timestamp.valueOf("2017-03-4 19:09:30.1")))
 		{
 			time.setId(1);
-			time.setStartTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:10.1"));
+			time.setStartTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:10.0"));
 			time.setEndTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:30.1"));
 		}
-		else if(requestedTime.after(java.sql.Timestamp.valueOf("2017-03-4 19:09:30.1")) && requestedTime.before(java.sql.Timestamp.valueOf("2017-03-4 19:09:50.1")))
+		else if(requestedTime.after(java.sql.Timestamp.valueOf("2017-03-4 19:09:30.0")) && requestedTime.before(java.sql.Timestamp.valueOf("2017-03-4 19:09:50.1")))
 		{
 			time.setId(2);
-			time.setStartTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:30.1"));
+			time.setStartTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:30.0"));
 			time.setEndTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:50.1"));
 		}
-		else if(requestedTime.after(java.sql.Timestamp.valueOf("2017-03-4 19:09:50.1")) && requestedTime.before(java.sql.Timestamp.valueOf("2017-03-4 19:10:10.1")))
+		else if(requestedTime.after(java.sql.Timestamp.valueOf("2017-03-4 19:09:50.0")) && requestedTime.before(java.sql.Timestamp.valueOf("2017-03-4 19:10:10.1")))
 		{
 			time.setId(3);
-			time.setStartTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:50.1"));
+			time.setStartTime(java.sql.Timestamp.valueOf("2017-03-4 19:09:50.0"));
 			time.setEndTime(java.sql.Timestamp.valueOf("2017-03-4 19:10:10.1"));
 		}
 		return time;
