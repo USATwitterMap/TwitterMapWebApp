@@ -34,7 +34,10 @@ public class SearchWordsController {
 		wordQueryData.setNextTime(1000);
 		
 		//get word results from database
+		System.out.print("\nTime searched: " + new Timestamp(search.getDate()));
 		TwitterTime time = wordsDao.GetTimeBetween(new Timestamp(search.getDate()));
+		System.out.print("\nTime retrieved start: " + time.getStartTime());
+		System.out.print("\nTime retrieved end: " + time.getEndTime());
 		if(time.getEndTime() != null) {
 			TwitterWord wordQuery = new TwitterWord();
 			wordQuery.setTime(time.getId());
@@ -54,6 +57,7 @@ public class SearchWordsController {
 				marker.setLatitude((stateLoc.getLatitudeMax() + stateLoc.getLatitudeMin()) / 2);
 				marker.setLongitude((stateLoc.getLongitudeMax() + stateLoc.getLongitudeMin()) / 2);
 				wordQueryData.getMarkers().add(marker);
+				System.out.print("\nDelay(s): " + (double)marker.getDelay() / (double)1000);
 			}
 		}
 		return wordQueryData;
