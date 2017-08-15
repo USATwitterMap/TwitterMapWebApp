@@ -8,14 +8,13 @@
       <transactionManager type="JDBC"/>
       <dataSource type="POOLED">
         <property name="driver" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="jdbc:mysql://localhost:3306/TwitterMap"/>
-        <property name="username" value="root"/>
-        <property name="password" value="ren-6BrGh)@d-R[K"/>
+        <property name="url" value="jdbc:mysql://35.184.89.199/TwitterMap"/>
+        <property name="username" value="twitterMapUser"/>
+        <property name="password" value="jklsjeljflsdf"/>
       </dataSource>
     </environment>
   </environments>
   <mappers>
     <mapper resource="resources/TwitterWordMapper.xml"/>
-    <mapper resource="resources/TwitterTimeMapper.xml"/>
   </mappers>
 </configuration>

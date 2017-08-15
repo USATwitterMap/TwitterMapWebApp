@@ -13,8 +13,8 @@
     <mvc:annotation-driven />
     <context:component-scan base-package="controller" />
     
-	<!--<bean id="wordsDao" class="dao.TwitterDataDaoImpl" /> -->
-	<bean id="wordsDao" class="dao.TwitterDataDaoMock" />
+	<bean id="wordsDao" class="dao.TwitterDataDaoImpl" />
+	<!-- <bean id="wordsDao" class="dao.TwitterDataDaoMock" />-->
 
 	<bean class = "org.springframework.web.servlet.view.InternalResourceViewResolver">
 	      <property name = "prefix" value = "/WEB-INF/jsp/" />

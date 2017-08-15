@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import dao.*;
-import view.MapMarker;
 import view.TwitterTimeWindow;
-import view.TwitterWordData;
-import view.TwitterWordQuery;
 
 @Controller
 public class SearchWordsController {
@@ -26,13 +23,23 @@ public class SearchWordsController {
 	
 	@RequestMapping(value = "twitterAjax", method = RequestMethod.POST)
 	@ResponseBody
-	public TwitterWordData twitterAjax(@RequestBody TwitterWordQuery search )
+	public TwitterWordData twitterAjax(@RequestBody String[][] search )
 	{
 		//prepare return structure
 		TwitterWordData wordQueryData = new TwitterWordData();
-		wordQueryData.setMarkers(new ArrayList<MapMarker>());
-		wordQueryData.setNextTime(1000);
+
+		TwitterWordQuery wordQuery = new TwitterWordQuery();
+		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
+		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));		
+		String[] words = new String[search.length];
+		for(int index = 0; index < search.length; index++)
+		{
+			words[index] = (search[index][0]);
+		}
+		wordQuery.setWords(words);
+		wordsDao.GetOccurances(wordQuery);
 		
+		/*
 		//get word results from database
 		System.out.print("\nTime searched: " + new Timestamp(search.getDate()));
 		TwitterTime time = wordsDao.GetTimeBetween(new Timestamp(search.getDate()));
@@ -60,15 +67,13 @@ public class SearchWordsController {
 				System.out.print("\nDelay(s): " + (double)marker.getDelay() / (double)1000);
 			}
 		}
+		*/
 		return wordQueryData;
 	}
 	
 	@RequestMapping(value = "twitterTimeWindow", method = RequestMethod.GET)
 	   public ModelAndView twitterTimeWindow() {
 			TwitterTimeWindow vo =new TwitterTimeWindow();
-			List<TwitterTime> times = wordsDao.GetTimeRange();
-			vo.setEarliestDate(times.get(0).getStartTime());
-			vo.setLatestDate(times.get(1).getEndTime());
 			return new ModelAndView("twitterWordSearch", "command", vo);
 	   }
 }

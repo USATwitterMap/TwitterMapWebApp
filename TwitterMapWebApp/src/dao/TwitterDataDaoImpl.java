@@ -7,51 +7,12 @@ import org.apache.ibatis.session.SqlSession;
 
 public class TwitterDataDaoImpl implements TwitterDataDao {
 	
-	public List<TwitterWord> GetOccurances(TwitterWord word) {
+	public List<TwitterWordData> GetOccurances(TwitterWordQuery word) {
 		SqlSession session = null;
-		List<TwitterWord> results = null;
+		List<TwitterWordData> results = null;
 		try {
 			session = ConnectionFactory.GetFactory().openSession();
 			results = session.selectList("TwitterWordMapper.GetWordsDuringTimeByState", word);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally {
-			if(session != null) {
-				session.close();
-			}
-		}
-			
-		return results;
-	}
-	
-	public TwitterTime GetTimeBetween(Timestamp requestedTime) {
-		SqlSession session = null;
-		TwitterTime results = null;
-		try {
-			session = ConnectionFactory.GetFactory().openSession();
-			results = session.selectOne("TwitterTimeMapper.GetTimeBetween", requestedTime);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally {
-			if(session != null) {
-				session.close();
-			}
-		}
-			
-		return results;
-	}
-
-	@Override
-	public List<TwitterTime> GetTimeRange() {
-		SqlSession session = null;
-		List<TwitterTime> results = null;
-		try {
-			session = ConnectionFactory.GetFactory().openSession();
-			results = session.selectList("TwitterTimeMapper.GetTimeRange");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

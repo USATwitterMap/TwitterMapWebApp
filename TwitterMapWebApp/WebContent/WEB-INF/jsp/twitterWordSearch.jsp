@@ -49,11 +49,47 @@ body{margin:40px;}
 }
 </style> 
 	   <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-	   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCd9uxfx1yJarUMlvGVOTNEhiDZHCKbEvU&sensor=false"></script>
+	   <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+	   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-		
+	   
+	   <!-- Include Date Range Picker -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+       <script>
+	      google.charts.load('current', {
+	        'packages':['geochart'],
+	        // Note: you will need to get a mapsApiKey for your project.
+	        // See: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings
+	        'mapsApiKey': 'AIzaSyCd9uxfx1yJarUMlvGVOTNEhiDZHCKbEvU'
+	      });
+	      google.charts.setOnLoadCallback(drawRegionsMap);
+	
+	      function drawRegionsMap() {
+	    	  var data = google.visualization.arrayToDataTable([
+	    		    ['State', 'Foo Factor'],
+	    		    ['US-IL', 200],
+	    		    ['US-IN', 300],
+	    		    ['US-IA', 20],
+	    		    ['US-RI', 150]
+	    		  ]);
+	
+	        var options = {
+	          region: 'US', 
+	          colorAxis: {colors: ['#00853f', 'black', '#e31b23']},
+	          backgroundColor: '#81d4fa',
+	          datalessRegionColor: '#f8bbd0',
+	          defaultColor: '#f5f5f5',
+	        };
+	
+	        geochart = new google.visualization.GeoChart(document.getElementById('geochart-colors'));
+	        	  geochart.draw(data, {region: "US", resolution: "provinces"});
+	      };
+    </script>
+	   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	   <script>
+	   var geochart 
 	 var curRow = 1;	      
       $(document).on("click", "#add_word", function(){
     	  nextRow=curRow + 1;
@@ -61,9 +97,9 @@ body{margin:40px;}
 	      var color = document.getElementById('color'+curRow).style.backgroundColor;
 	      $('#word_table').append('<tr id="wordRow'+(nextRow)+'"></tr>');
 	      var y = document.getElementById("wordRow"+curRow);
-	      y.innerHTML = "<td><label class='input-lg'>"+word+"</label></td><td><label><button type='button' id='color'"+curRow+" style='background-color: "+color+";' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></label></td><td><button type='button' id='remove_word' class='btn btn-danger btn-circleremove btn-lg glyphicon glyphicon-remove'></button></td>";
+	      y.innerHTML = "<td><label class='input-lg'>"+word+"</label></td><td><label><button type='button' id='color"+curRow+"' style='background-color: "+color+";' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></label></td><td><button type='button' id='remove_word' class='btn btn-danger btn-circleremove btn-lg glyphicon glyphicon-remove'></button></td>";
 	      var y2 = document.getElementById("wordRow"+nextRow);
-	      y2.innerHTML = "<td><input type='text' class='form-control input-lg' id='word"+nextRow+"'></td><td><button type='button' id='color"+nextRow+"' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></td><td><button type='button' id='add_word' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
+	      y2.innerHTML = "<td><input type='text' class='form-control input-lg' id='word"+nextRow+"'></td><td><button type='button' style='background-color: #ff0f00' id='color"+nextRow+"' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></td><td><button type='button' id='add_word' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
 	      curRow++; 
 	  });
       
@@ -77,6 +113,17 @@ body{margin:40px;}
       
       var maxColorColumnsAndRows = 10;
       $( document ).ready(function() {
+    	  
+    	  $(function() {
+    		    $('input[name="daterange"]').daterangepicker({
+    		        timePicker: true,
+    		        timePickerIncrement: 30,
+    		        locale: {
+    		            format: 'YYYY-MM-DD HH:mm'
+    		        }
+    		    });
+    		});
+    	  
     	  var rowcontent = ""
    		  for (rowNum = 1; rowNum <= maxColorColumnsAndRows; rowNum++) { 
    			$('#color_table').append('<tr id="colorRow'+rowNum+'"></tr>');
@@ -94,6 +141,22 @@ body{margin:40px;}
         	  colorInvoker = e.relatedTarget;
         	});
     	  
+    	  $('#search').on('click', function (e) {
+    		  var searchData = [];
+    		  var table = $('#word_table')[0];
+    		  var rows = table.rows;
+    		  var time = $('#startEndTime')[0].value;
+    		  for (var i = 1; i < rows.length-1; i++) {
+    			  var wordDetails = [];
+    			  wordDetails.push(rows[i].children[0].textContent);
+    			  var temp = rows[i].children[1].innerHTML;
+    			  temp =  temp.substring(temp.indexOf("background-color: ") + "background-color: ".length);
+    			  wordDetails.push(temp.substring(0, temp.indexOf(";")));
+    			  wordDetails.push(time);
+    			  searchData.push(wordDetails);
+    		  }
+    		  testAjax(searchData);
+    		})
     	});
       
       var colorInvoker;
@@ -104,48 +167,6 @@ body{margin:40px;}
     	  colorInvoker.setAttribute("style", "background-color: "+toColor+";");
     	  $('#colorPicker').modal('toggle');
       }
-      
-	   var map;
-		function initialize() {
-		  var mapOptions = {
-		    zoom: 5,
-		    minZoom: 5,
-		    maxZoom: 10,
-			clickableIcons: false,
-			mapTypeControl: false,
-			streetViewControl: false,
-		    center: new google.maps.LatLng(39.8282, -98.5795)
-		  };
-		  map = new google.maps.Map(document.getElementById('map-canvas'),
-		      mapOptions);
-		  google.maps.event.addListener(map, 'center_changed', function() {
-			    checkBounds(map);
-			});
-			// If the map position is out of range, move it back
-			function checkBounds(map) {
-
-			var latNorth = map.getBounds().getNorthEast().lat();
-			var latSouth = map.getBounds().getSouthWest().lat();
-			var newLat;
-
-			if(latNorth<85 && latSouth>-85)     /* in both side -> it's ok */
-			    return;
-			else {
-			    if(latNorth>85 && latSouth<-85)   /* out both side -> it's ok */
-			        return;
-			    else {
-			        if(latNorth>85)   
-			            newLat =  map.getCenter().lat() - (latNorth-85);   /* too north, centering */
-			        if(latSouth<-85) 
-			            newLat =  map.getCenter().lat() - (latSouth+85);   /* too south, centering */
-			    }   
-			}
-			if(newLat) {
-			    var newCenter= new google.maps.LatLng( newLat ,map.getCenter().lng() );
-			    map.setCenter(newCenter);
-			    }   
-			}
-		}
 		
 		function rainbow(numOfSteps, step) {
 		    // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.
@@ -168,40 +189,9 @@ body{margin:40px;}
 		    return (c);
 		}
 		
-		google.maps.event.addDomListener(window, 'load', initialize);
-		
-		   function updateTextInput(val, startTime, endTime) {
-			   currentDateValue = (endTime - startTime) * val / 1000 + startTime;
-			   		var d = new Date(currentDateValue);
-			   		document.getElementById('textInput').innerHTML=d; 
-		        }
-		   var image = {
-				    url: 'dot.gif',
-				    // This marker is 128 pixels wide by 128 pixels high.
-				    size: new google.maps.Size(128, 128),
-				    // The origin for this image is (0, 0).
-				    origin: new google.maps.Point(0, 0),
-				    // The anchor for this image is the center of the image at 64-64
-				    anchor: new google.maps.Point(64, 64)
-				  };
-		   function addDynamicMarker(location) {
-			    var marker = new google.maps.Marker({
-			        position: location,
-			        map: map,
-			        draggable: false,
-			        optimized:false, // <-- required for animated gif
-			        icon: image
-			    });
-			    setTimeout(function () {
-			        marker.setMap(null);
-			        delete marker;
-			    }, 300);
-			    return marker;
-			}
 		   
-		   function testAjax() {
-			   var obj = { "keyword": document.getElementById('keywordInput').value, "date": this.currentDateValue };
-			   
+		   function testAjax(searchData) {
+			   var obj = searchData;
 			   $.ajax({
 		             	 type: "POST",
 			             contentType: "application/json",
@@ -213,29 +203,17 @@ body{margin:40px;}
 			                 'Content-Type': 'application/json' 
 			             },
 			             timeout: 1000,
-			             success: function (data) {
-			            	 var twitterData = data;
-			            	 var arrayLength = twitterData.markers.length;
-			            	 for (var i = 0; i < arrayLength; i++) {
-			            		 (function(i) {
-			            			 var delay = twitterData.markers[i].delay;
-			            			 var counter = twitterData.markers[i].counter;
-			            			 this.markerAnimations.push(setInterval(function() {
-			            				 if(counter > 0)
-			            		            addDynamicMarker(new google.maps.LatLng(twitterData.markers[i].longitude, twitterData.markers[i].latitude));
-			            					counter--;
-			            		        }, delay))
-			            		    })(i);
-			            	 }
-			            	 refreshMarkers = setTimeout(function() {
-		            	 		for (var i = 0; i < this.markerAnimations.length; i++) {
-		     					   clearInterval(this.markerAnimations[i]);
-		     	            	}
-		            	 		while(currentDateValue < twitterData.nextTime) {
-		            	 			incrementTime()
-	            	 			}
-		            		 	testAjax();
-            				}, twitterData.nextTime - currentDateValue);
+			             success: function (rawStateData) {
+			            	 var data = google.visualization.arrayToDataTable(rawStateData);
+			 	
+				 	        var options = {
+				 	          region: 'US', 
+				 	          colorAxis: {colors: ['#00853f', 'black', '#e31b23']},
+				 	          backgroundColor: '#81d4fa',
+				 	          datalessRegionColor: '#f8bbd0',
+				 	          defaultColor: '#f5f5f5',
+				 	        };
+							geochart.draw(data, {region: "US", resolution: "provinces"});
 			             },
 			             fail: function () {
 			             },
@@ -244,54 +222,7 @@ body{margin:40px;}
 			             
 				});
 		   }
-
-		   var pastDateTime;
-		   var windowDateTime;
-		   var tickWeight;
-		   var currentDateValue;
-		   var rangeAnimation;
-		   var refreshMarkers;
-		   var markerAnimations = [];
 		   
-		   function animateTimeSlider(startTime, endTime) {
-			   if(document.getElementById('PlayPauseButton').value == "Play") {
-				   this.markerAnimations = [];
-				   var tickerVal = document.getElementById('timeSlider').value;
-				   updateTextInput(tickerVal, startTime, endTime)
-				   testAjax();
-				   var val = document.getElementById('timeSlider').value;
-				   this.pastDateTime = startTime;
-				   this.windowDateTime = (endTime - startTime);
-				   this.currentDateValue = windowDateTime * val / 1000 + pastDateTime;
-				   this.tickWeight = this.windowDateTime / 1000;
-				   this.rangeAnimation = setInterval(incrementTime, 1000);
-				   document.getElementById('PlayPauseButton').value="Pause";
-			   }
-			   else 
-			   {
-				   clearInterval(this.refreshMarkers);
-				   clearInterval(this.rangeAnimation);
-				   for (var i = 0; i < this.markerAnimations.length; i++) {
-					   clearInterval(this.markerAnimations[i]);
-	            	}
-				   document.getElementById('PlayPauseButton').value="Play";
-			   }
-			}
-
-			function incrementTime() {
-				if(currentDateValue < windowDateTime + pastDateTime) {
-					this.currentDateValue += 1000;
-					var tickTimeVal = document.getElementById('timeSlider').value * this.tickWeight;
-					if(this.currentDateValue - this.pastDateTime > tickTimeVal + this.tickWeight) {
-						var tempUp = (this.currentDateValue - this.pastDateTime - tickTimeVal + this.tickWeight) / this.tickWeight;
-						if(tempUp >= 1) 
-						{
-							document.getElementById('timeSlider').stepUp((this.currentDateValue - this.pastDateTime - tickTimeVal + this.tickWeight) / this.tickWeight);
-						}
-					}
-					document.getElementById('textInput').innerHTML = new Date(this.currentDateValue);
-				}
-			}
 	   </script>  
    </head>
    <body>
@@ -341,7 +272,7 @@ body{margin:40px;}
 	            <tbody>
 	              <tr id="wordRow1">
 	                <td><input type="text" class="form-control input-lg" id="word1"></td>
-	                <td><button type="button" id="color1" data-toggle='modal' data-target='#colorPicker' class="btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint"></button></td>
+	                <td><button type="button" id="color1" style="background-color: #ff0f00" data-toggle='modal' data-target='#colorPicker' class="btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint"></button></td>
 	                <td><button type="button" id="add_word" class="btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus"></button></td>
 	              </tr>
 	            </tbody>
@@ -353,12 +284,20 @@ body{margin:40px;}
               <h3 class="panel-title">Dates</h3>
             </div>
             <div class="panel-body">
-              Dates
+            <input type="text" id="startEndTime" name="daterange" value="01/01/2015 1:30 PM - 01/01/2015 2:00 PM" />
+            </div>
+          </div>
+          <div class="panel panel-success">
+          	<div class="panel-heading">
+              <h3 class="panel-title">Search</h3>
+            </div>
+            <div class="panel-body">
+              <button id="search" type="button" class="btn btn-primary">Search</button>
             </div>
           </div>
         </div><!-- /.col-sm-4 -->
       </div>
-   	<div id="map-canvas" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1"></div>
+   	<div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1"></div>
    </body>
    
 </html>

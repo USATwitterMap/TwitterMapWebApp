@@ -2,16 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace = "TwitterWordMapper">
    
-   <resultMap id = "wordResult" type = "dao.TwitterWord">
-	   <result property = "id" column = "id"/>
+   <resultMap id = "wordResult" type = "dao.TwitterWordData">
 	   <result property = "state" column = "state"/>
 	   <result property = "word" column = "word"/>
-	   <result property = "occurances" column = "occurances"/>
-	   <result property = "time" column = "time"/>
+	   <result property = "occurances" column = "SumOccurances"/>
 	</resultMap>
 
-   <select id = "GetWordsDuringTimeByState" resultType="dao.TwitterWord">
-   		SELECT state, occurances FROM 
-   		Words WHERE time = #{time} AND word = #{word};
+   <select id = "GetWordsDuringTimeByState" resultType="dao.TwitterWordData">
+   		select w.state as state, w.word as word, sum(occurances) as SumOccurances 
+   		from Words w join Times t on w.time=t.id where w.word in (#{words}) and t.startTime &gt; #{startDate} and t.endTime &lt; #{stopDate} group by w.state, w.word;
    </select>
 </mapper> 
