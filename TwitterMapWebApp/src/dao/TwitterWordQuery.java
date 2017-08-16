@@ -7,17 +7,10 @@ import org.apache.ibatis.annotations.Param;
 
 public class TwitterWordQuery {
 	
-	private String[] words;
+	private List<String> words;
 	private String startDate;
 	private String stopDate;
 	
-	public String[] getWords() {
-		return words;
-	}
-	
-	public void setWords(@Param("words") String[] words) {
-		this.words = words;
-	}
 	public String getStartDate() {
 		return startDate;
 	}
@@ -29,5 +22,11 @@ public class TwitterWordQuery {
 	}
 	public void setStopDate(String stopDate) {
 		this.stopDate = stopDate;
+	}
+	public List<String> getWords() {
+		return words;
+	}
+	public void setWords(List<String> words) {
+		this.words = words;
 	}
 }

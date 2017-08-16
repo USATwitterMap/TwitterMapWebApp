@@ -9,11 +9,11 @@ public class TwitterDataDaoImpl implements TwitterDataDao {
 	
 	public List<TwitterWordData> GetOccurances(TwitterWordQuery word) {
 		SqlSession session = null;
-		List<TwitterWordData> results = null;
+		List results = null;
 		try {
 			session = ConnectionFactory.GetFactory().openSession();
 			results = session.selectList("TwitterWordMapper.GetWordsDuringTimeByState", word);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -22,7 +22,6 @@ public class TwitterDataDaoImpl implements TwitterDataDao {
 				session.close();
 			}
 		}
-			
 		return results;
 	}
 }

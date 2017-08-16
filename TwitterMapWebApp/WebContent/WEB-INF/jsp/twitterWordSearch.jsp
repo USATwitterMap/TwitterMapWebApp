@@ -68,19 +68,15 @@ body{margin:40px;}
 	
 	      function drawRegionsMap() {
 	    	  var data = google.visualization.arrayToDataTable([
-	    		    ['State', 'Foo Factor'],
-	    		    ['US-IL', 200],
-	    		    ['US-IN', 300],
-	    		    ['US-IA', 20],
-	    		    ['US-RI', 150]
+	    		    ['State', 'Word'],
 	    		  ]);
 	
 	        var options = {
 	          region: 'US', 
-	          colorAxis: {colors: ['#00853f', 'black', '#e31b23']},
+	          colorAxis: {colors: ['black', '#e31b23']},
 	          backgroundColor: '#81d4fa',
-	          datalessRegionColor: '#f8bbd0',
-	          defaultColor: '#f5f5f5',
+	          datalessRegionColor: '#black',
+	          defaultColor: '#black',
 	        };
 	
 	        geochart = new google.visualization.GeoChart(document.getElementById('geochart-colors'));
@@ -94,7 +90,7 @@ body{margin:40px;}
       $(document).on("click", "#add_word", function(){
     	  nextRow=curRow + 1;
 	      var word = document.getElementById('word'+curRow).value;
-	      var color = document.getElementById('color'+curRow).style.backgroundColor;
+	      var color = rgbToHex(document.getElementById('color'+curRow).style.backgroundColor);
 	      $('#word_table').append('<tr id="wordRow'+(nextRow)+'"></tr>');
 	      var y = document.getElementById("wordRow"+curRow);
 	      y.innerHTML = "<td><label class='input-lg'>"+word+"</label></td><td><label><button type='button' id='color"+curRow+"' style='background-color: "+color+";' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></label></td><td><button type='button' id='remove_word' class='btn btn-danger btn-circleremove btn-lg glyphicon glyphicon-remove'></button></td>";
@@ -161,7 +157,24 @@ body{margin:40px;}
       
       var colorInvoker;
       
-      
+      function componentFromStr(numStr, percent) {
+    	    var num = Math.max(0, parseInt(numStr, 10));
+    	    return percent ?
+    	        Math.floor(255 * Math.min(100, num) / 100) : Math.min(255, num);
+    	}
+
+    	function rgbToHex(rgb) {
+    	    var rgbRegex = /^rgb\(\s*(-?\d+)(%?)\s*,\s*(-?\d+)(%?)\s*,\s*(-?\d+)(%?)\s*\)$/;
+    	    var result, r, g, b, hex = "";
+    	    if ( (result = rgbRegex.exec(rgb)) ) {
+    	        r = componentFromStr(result[1], result[2]);
+    	        g = componentFromStr(result[3], result[4]);
+    	        b = componentFromStr(result[5], result[6]);
+
+    	        hex = "#" + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    	    }
+    	    return hex;
+    	}
       
       function setColor(toColor) {
     	  colorInvoker.setAttribute("style", "background-color: "+toColor+";");
@@ -202,22 +215,25 @@ body{margin:40px;}
 			                 'Accept': 'application/json',
 			                 'Content-Type': 'application/json' 
 			             },
-			             timeout: 1000,
+			             timeout: 10000,
 			             success: function (rawStateData) {
-			            	 var data = google.visualization.arrayToDataTable(rawStateData);
-			 	
+			            	 var data = google.visualization.arrayToDataTable(rawStateData.areaChart);
 				 	        var options = {
 				 	          region: 'US', 
-				 	          colorAxis: {colors: ['#00853f', 'black', '#e31b23']},
+				 	          colorAxis: {colors: ['black', data.color]},
 				 	          backgroundColor: '#81d4fa',
 				 	          datalessRegionColor: '#f8bbd0',
 				 	          defaultColor: '#f5f5f5',
 				 	        };
-							geochart.draw(data, {region: "US", resolution: "provinces"});
+							geochart.draw(data, {region: "US", resolution: "provinces", colors: [rawStateData.color]});
 			             },
-			             fail: function () {
+			             fail: function () 
+			             {
+			            	var test = 1; 
 			             },
-			             always : function() { 
+			             always : function() 
+			             { 
+				         	var test2 = 1; 
 			             }
 			             
 				});

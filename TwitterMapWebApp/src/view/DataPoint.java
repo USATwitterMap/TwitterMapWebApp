@@ -22,5 +22,4 @@ public class DataPoint {
 	public void setOccurances(int occurances) {
 		this.occurances = occurances;
 	}
-	
 }

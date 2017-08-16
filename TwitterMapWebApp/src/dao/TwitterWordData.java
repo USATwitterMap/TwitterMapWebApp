@@ -24,5 +24,5 @@ public class TwitterWordData {
 	public void setOccurances(int occurances) {
 		this.occurances = occurances;
 	}
-
+	
 }

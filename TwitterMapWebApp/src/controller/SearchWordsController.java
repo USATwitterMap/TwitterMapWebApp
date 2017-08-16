@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import dao.*;
+import view.ChartView;
 import view.TwitterTimeWindow;
 
 @Controller
@@ -23,52 +24,31 @@ public class SearchWordsController {
 	
 	@RequestMapping(value = "twitterAjax", method = RequestMethod.POST)
 	@ResponseBody
-	public TwitterWordData twitterAjax(@RequestBody String[][] search )
+	public ChartView twitterAjax(@RequestBody String[][] search )
 	{
 		//prepare return structure
-		TwitterWordData wordQueryData = new TwitterWordData();
-
 		TwitterWordQuery wordQuery = new TwitterWordQuery();
 		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
-		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));		
-		String[] words = new String[search.length];
+		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
+		wordQuery.setWords(new ArrayList<String>());
 		for(int index = 0; index < search.length; index++)
 		{
-			words[index] = (search[index][0]);
+			wordQuery.getWords().add(search[index][0]);
 		}
-		wordQuery.setWords(words);
-		wordsDao.GetOccurances(wordQuery);
+		List<TwitterWordData> results = wordsDao.GetOccurances(wordQuery);
+		ChartView view = new ChartView();
+		Object[][] areaMapData = new Object[results.size()+1][2];
+		areaMapData[0][0] = "State";
+		areaMapData[0][1] = search[0][0];
+		view.setColor(search[0][1]);
+		for(int index = 0; index < results.size(); index++) 
+		{
+			areaMapData[index + 1][0] = "US-" + results.get(index).getState();
+			areaMapData[index + 1][1] = results.get(index).getOccurances();
+		}
 		
-		/*
-		//get word results from database
-		System.out.print("\nTime searched: " + new Timestamp(search.getDate()));
-		TwitterTime time = wordsDao.GetTimeBetween(new Timestamp(search.getDate()));
-		System.out.print("\nTime retrieved start: " + time.getStartTime());
-		System.out.print("\nTime retrieved end: " + time.getEndTime());
-		if(time.getEndTime() != null) {
-			TwitterWord wordQuery = new TwitterWord();
-			wordQuery.setTime(time.getId());
-			wordQuery.setWord(search.getKeyword());
-			List<TwitterWord> wordQueryResults = wordsDao.GetOccurances(wordQuery);
-			
-			//add the ending time for this slice of data to result
-			wordQueryData.setNextTime(time.getEndTime().getTime());
-	
-			//cycle and add to result
-			for(TwitterWord result : wordQueryResults) {
-				double timeLeft = time.getEndTime().getTime() - search.getDate();
-				StateLocations stateLoc = StateLocations.FindLatLong(result.getState());
-				MapMarker marker = new MapMarker();
-				marker.setCounter(result.getOccurances());
-				marker.setDelay((int)(timeLeft / (result.getOccurances() + 1)));
-				marker.setLatitude((stateLoc.getLatitudeMax() + stateLoc.getLatitudeMin()) / 2);
-				marker.setLongitude((stateLoc.getLongitudeMax() + stateLoc.getLongitudeMin()) / 2);
-				wordQueryData.getMarkers().add(marker);
-				System.out.print("\nDelay(s): " + (double)marker.getDelay() / (double)1000);
-			}
-		}
-		*/
-		return wordQueryData;
+		view.setAreaChart(areaMapData);
+		return view;
 	}
 	
 	@RequestMapping(value = "twitterTimeWindow", method = RequestMethod.GET)
