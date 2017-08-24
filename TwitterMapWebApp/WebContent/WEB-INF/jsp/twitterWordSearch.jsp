@@ -30,7 +30,7 @@ body{margin:40px;}
   border-radius: 25px;
 }
 .first {
-    z-index: 2;
+    z-index: 3;
 }
 
 .second {
@@ -53,11 +53,13 @@ body{margin:40px;}
 	   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCd9uxfx1yJarUMlvGVOTNEhiDZHCKbEvU&sensor=false"></script>
 	   
 	   <!-- Include Date Range Picker -->
 <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
        <script>
+       	  google.charts.load( 'visualization', '1', { packages:['corechart'] });
 	      google.charts.load('current', {
 	        'packages':['geochart'],
 	        // Note: you will need to get a mapsApiKey for your project.
@@ -78,14 +80,61 @@ body{margin:40px;}
 	          datalessRegionColor: '#black',
 	          defaultColor: '#black',
 	        };
-	
+	        var mapOptions = {
+	    		    zoom: 6,
+	    			clickableIcons: false,
+	    			mapTypeControl: false,
+	    			streetViewControl: false,
+	    		    center: new google.maps.LatLng(39.8283, -98.5795),
+          			draggable: false,
+          			maxZoom: 6,
+          			minZoom: 6,
+          			mapTypeId: google.maps.MapTypeId.ROADMAP,
+          			styles: [
+          		      {
+          			    featureType: "administrative",
+          			    elementType: "labels",
+          			    stylers: [
+          			      { visibility: "off" }
+          			    ]
+          			  },{
+          			    featureType: "poi",
+          			    stylers: [
+          			      { visibility: "off" }
+          			    ]
+          			  },{
+          			    featureType: "water",
+          			    elementType: "labels",
+          			    stylers: [
+          			      { visibility: "off" }
+          			    ]
+          			  },{
+          			    featureType: "road",
+          			    stylers: [
+          			      { visibility: "off" }
+          			    ]
+          			  },{
+         			    featureType: "landscape",
+           			    stylers: [
+           			      { visibility: "off" }
+           			    ]
+           			  } 
+          			]
+	        };
 	        geochart = new google.visualization.GeoChart(document.getElementById('geochart-colors'));
 	        	  geochart.draw(data, {region: "US", resolution: "provinces"});
+        	  earthchart = new google.maps.Map(document.getElementById('earthchart-colors'), mapOptions);
+        	  google.visualization.events.addListener(geochart, 'ready', function () {
+        		  	test ="";
+        		  });
 	      };
     </script>
 	   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	   <script>
 	   var geochart 
+	   var earthchart;
+	   var projection;
+	   var stateMarkers = [];
 	 var curRow = 1;	      
       $(document).on("click", "#add_word", function(){
     	  nextRow=curRow + 1;
@@ -106,10 +155,41 @@ body{margin:40px;}
     	  test4 = test3.replace("wordRow", "");
     	  $(test2).html('');
 	  });
-      
       var maxColorColumnsAndRows = 10;
       $( document ).ready(function() {
-    	  
+
+    	  ChartMarker.prototype = new google.maps.OverlayView;
+
+    	  ChartMarker.prototype.onAdd = function() {
+    	      $( this.getPanes().overlayMouseTarget ).append( this.$div );
+    	  };
+
+    	  ChartMarker.prototype.onRemove = function() {
+    	      this.$div.remove();
+    	  };
+
+    	  ChartMarker.prototype.draw = function() {
+    	      var marker = this;
+    	      var projection = this.getProjection();
+    	      var position = projection.fromLatLngToDivPixel( this.get('position') );
+
+    	      this.$div.css({
+    	          left: position.x,
+    	          top: position.y - 60,
+    	          display: 'block'
+    	      })
+
+    	      this.$inner
+    	          .html( '<img src="' + this.get('image') + '"/>' )
+    	          .click( function( event ) {
+    	              var events = marker.get('events');
+    	              events && events.click( event );
+    	          });
+    	          
+    	      this.chart = new google.visualization.PieChart( this.$inner[0] );
+    	      this.chart.draw( this.get('chartData'), this.get('chartOptions') );
+    	  };
+    	      	  
     	  $(function() {
     		    $('input[name="daterange"]').daterangepicker({
     		        timePicker: true,
@@ -151,7 +231,14 @@ body{margin:40px;}
     			  wordDetails.push(time);
     			  searchData.push(wordDetails);
     		  }
-    		  testAjax(searchData);
+    		  if(searchData.length == 1) 
+    		  {
+    		  	searchSingle(searchData);
+    		  }
+    		  else if(searchData.length >1) 
+    		  {
+      		  	searchMultiple(searchData);
+      		  }
     		})
     	});
       
@@ -201,14 +288,18 @@ body{margin:40px;}
 		    var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
 		    return (c);
 		}
-		
-		   
-		   function testAjax(searchData) {
+			function searchMultiple(searchData) {
 			   var obj = searchData;
+			   
+			   for (var i = 0; i < stateMarkers.length; i++) 
+			   {
+				   stateMarkers[i].setMap(null);
+		       }
+			   stateMarkers = [];
 			   $.ajax({
 		             	 type: "POST",
 			             contentType: "application/json",
-			             url: "twitterAjax",
+			             url: "searchMultiple",
 			             data: JSON.stringify(obj),
 			             dataType: 'json',
 			             headers: { 
@@ -217,6 +308,70 @@ body{margin:40px;}
 			             },
 			             timeout: 10000,
 			             success: function (rawStateData) {
+			            	 document.getElementById("earthchart-colors").style.zIndex = "2";
+			            	 document.getElementById("geochart-colors").style.zIndex = "1";
+			            	 for(var i = 0; i < rawStateData.locations.length; i++)
+			            	 {
+			            	  var colorData = [];
+			           		  var latLng = new google.maps.LatLng( rawStateData.locations[i].latitude, rawStateData.locations[i].longitude );
+			           		  var stateDataArray = [];
+			           		  stateDataArray.push([]);
+	           				  stateDataArray[0].push('Word');
+	           				  stateDataArray[0].push('Occurances');
+			           		  for(var j = 0; j < rawStateData.locations[i].wordData.length; j++) 
+			           		  {
+			           			stateDataArray.push([]);
+			           			stateDataArray[j + 1].push(rawStateData.locations[i].wordData[j][0]);
+			           			colorData.push(rawStateData.locations[i].wordData[j][1]);
+			           			stateDataArray[j + 1].push(rawStateData.locations[i].wordData[j][2]);
+			           		  }
+		           		 	  var data = google.visualization.arrayToDataTable(stateDataArray);
+					 	      var options = {
+					 	          fontSize: 8,
+					 	          backgroundColor: 'transparent',
+					 	          legend: 'none',
+					 	          colors: colorData,
+					 	          //chartArea:{left:0,top:0,width:60,height:60}
+					 	      };
+			           		  var marker = new ChartMarker({
+			       	 	          map: earthchart,
+			       	 	          position: latLng,
+			       	 	          width: '120px',
+			       	 	          height: '120px',
+			       	 	          chartData: data,
+			       	 	          chartOptions: options,
+			       	 	      });
+			           		  stateMarkers.push(marker);
+			           	  }
+			             }, 
+			             fail: function () 
+			             {
+			            	var test = 1; 
+			             },
+			             always : function() 
+			             { 
+				         	var test2 = 1; 
+			             }
+			             
+				});
+		   }
+			
+		   function searchSingle(searchData) {
+			   var obj = searchData;
+			   $.ajax({
+		             	 type: "POST",
+			             contentType: "application/json",
+			             url: "searchSingle",
+			             data: JSON.stringify(obj),
+			             dataType: 'json',
+			             headers: { 
+			                 'Accept': 'application/json',
+			                 'Content-Type': 'application/json' 
+			             },
+			             timeout: 10000,
+			             success: function (rawStateData) {
+			            	 document.getElementById("geochart-colors").style.zIndex = "2";
+			            	 document.getElementById("earthchart-colors").style.zIndex = "1";
 			            	 var data = google.visualization.arrayToDataTable(rawStateData.areaChart);
 				 	        var options = {
 				 	          region: 'US', 
@@ -238,6 +393,28 @@ body{margin:40px;}
 			             
 				});
 		   }
+		   
+		   function ChartMarker( options ) {
+			    this.setValues( options );
+			    
+			    this.$inner = $('<div>').css({
+			        position: 'relative',
+			        left: '-50%', top: '-50%',
+			        width: options.width,
+			        height: options.height,
+			        fontSize: '1px',
+			        lineHeight: '1px',
+			        backgroundColor: 'transparent',
+			        cursor: 'default'
+			    });
+
+			    this.$div = $('<div>')
+			        .append( this.$inner )
+			        .css({
+			            position: 'absolute',
+			            display: 'none'
+			        });
+			};
 		   
 	   </script>  
    </head>
@@ -300,7 +477,7 @@ body{margin:40px;}
               <h3 class="panel-title">Dates</h3>
             </div>
             <div class="panel-body">
-            <input type="text" id="startEndTime" name="daterange" value="01/01/2015 1:30 PM - 01/01/2015 2:00 PM" />
+            <input type="text" id="startEndTime" name="daterange" value="2017-08-09 01:30 - 2017-08-12 02:00" />
             </div>
           </div>
           <div class="panel panel-success">
@@ -313,7 +490,8 @@ body{margin:40px;}
           </div>
         </div><!-- /.col-sm-4 -->
       </div>
-   	<div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1"></div>
+   	<div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1;"></div>
+   	<div id="earthchart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:2;"></div>
    </body>
    
 </html>

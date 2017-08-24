@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import dao.*;
-import view.ChartView;
-import view.TwitterTimeWindow;
+import view.SingleWordView;
+import view.LocationView;
+import view.MultiWordView;
+import view.SearchScreenView;
 
 @Controller
 public class SearchWordsController {
@@ -22,9 +24,9 @@ public class SearchWordsController {
 	@Autowired
 	private TwitterDataDao wordsDao;
 	
-	@RequestMapping(value = "twitterAjax", method = RequestMethod.POST)
+	@RequestMapping(value = "searchSingle", method = RequestMethod.POST)
 	@ResponseBody
-	public ChartView twitterAjax(@RequestBody String[][] search )
+	public SingleWordView searchSingle(@RequestBody String[][] search )
 	{
 		//prepare return structure
 		TwitterWordQuery wordQuery = new TwitterWordQuery();
@@ -36,7 +38,7 @@ public class SearchWordsController {
 			wordQuery.getWords().add(search[index][0]);
 		}
 		List<TwitterWordData> results = wordsDao.GetOccurances(wordQuery);
-		ChartView view = new ChartView();
+		SingleWordView view = new SingleWordView();
 		Object[][] areaMapData = new Object[results.size()+1][2];
 		areaMapData[0][0] = "State";
 		areaMapData[0][1] = search[0][0];
@@ -51,9 +53,50 @@ public class SearchWordsController {
 		return view;
 	}
 	
+	@RequestMapping(value = "searchMultiple", method = RequestMethod.POST)
+	@ResponseBody
+	public MultiWordView searchMultiple(@RequestBody String[][] search )
+	{
+		//prepare return structure
+		TwitterWordQuery wordQuery = new TwitterWordQuery();
+		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
+		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
+		wordQuery.setWords(new ArrayList<String>());
+		for(int index = 0; index < search.length; index++)
+		{
+			wordQuery.getWords().add(search[index][0]);
+		}
+		List<TwitterWordData> results = wordsDao.GetOccurances(wordQuery);
+		MultiWordView view = new MultiWordView();
+		view.setLocations(new LocationView[50]);
+		int locationCounter = 0;
+		for(StateLocations state : StateLocations.values()) {
+			view.getLocations()[locationCounter] = new LocationView();
+			view.getLocations()[locationCounter].setStateName("US-" + state.getStateAbbr());
+			view.getLocations()[locationCounter].setLatitude(state.getLatitude());
+			view.getLocations()[locationCounter].setLongitude(state.getLongitude());
+			view.getLocations()[locationCounter].setWordData(new Object[search.length][3]);
+			for(int searchIndex = 0; searchIndex < search.length; searchIndex++)
+			{
+				view.getLocations()[locationCounter].getWordData()[searchIndex][0] = search[searchIndex][0];
+				view.getLocations()[locationCounter].getWordData()[searchIndex][1] = search[searchIndex][1];
+				for(int resultIndex = 0; resultIndex < results.size(); resultIndex++)
+				{
+					if(results.get(resultIndex).getWord().equals(search[searchIndex][0]) && results.get(resultIndex).getState().equals(state.getStateAbbr())) 
+					{
+						view.getLocations()[locationCounter].getWordData()[searchIndex][2] = results.get(resultIndex).getOccurances();
+						break;
+					}
+				}
+			}
+			locationCounter++;
+		}
+		return view;
+	}
+	
 	@RequestMapping(value = "twitterTimeWindow", method = RequestMethod.GET)
 	   public ModelAndView twitterTimeWindow() {
-			TwitterTimeWindow vo =new TwitterTimeWindow();
-			return new ModelAndView("twitterWordSearch", "command", vo);
+			SearchScreenView vo =new SearchScreenView();
+			return new ModelAndView("twitterWordSearch", "searchInitData", vo);
 	   }
 }

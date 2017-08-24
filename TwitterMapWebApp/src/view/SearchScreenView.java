@@ -2,9 +2,11 @@ package view;
 
 import java.util.Date;
 
-public class TwitterTimeWindow {
+public class SearchScreenView {
 	private Date earliestDate;
 	private Date latestDate;
+	private double[][] locations;
+	
 	public Date getEarliestDate() {
 		return earliestDate;
 	}
@@ -17,5 +19,10 @@ public class TwitterTimeWindow {
 	public void setLatestDate(Date latestDate) {
 		this.latestDate = latestDate;
 	}
-
+	public double[][] getLocations() {
+		return locations;
+	}
+	public void setLocations(double[][] locations) {
+		this.locations = locations;
+	}
 }

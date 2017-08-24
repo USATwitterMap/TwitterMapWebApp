@@ -22,7 +22,10 @@
     </servlet-mapping>
      <servlet-mapping>
         <servlet-name>springapp</servlet-name>
-        <url-pattern>/twitterAjax/*</url-pattern>
+        <url-pattern>/searchSingle/*</url-pattern>
     </servlet-mapping>
-    
+    <servlet-mapping>
+        <servlet-name>springapp</servlet-name>
+        <url-pattern>/searchMultiple/*</url-pattern>
+    </servlet-mapping>
 </web-app>

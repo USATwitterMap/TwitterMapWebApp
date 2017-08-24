@@ -1,6 +1,6 @@
 package view;
 
-public class ChartView {
+public class SingleWordView {
 	private Object[][] areaChart;
 	private String color;
 
