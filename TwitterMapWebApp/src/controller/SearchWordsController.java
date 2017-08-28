@@ -1,9 +1,12 @@
 package controller;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +26,9 @@ public class SearchWordsController {
 
 	@Autowired
 	private TwitterDataDao wordsDao;
+	
+	@Autowired
+	private StatePopulationDao popDao;
 	
 	@RequestMapping(value = "searchSingle", method = RequestMethod.POST)
 	@ResponseBody

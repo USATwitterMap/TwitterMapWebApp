@@ -5,28 +5,28 @@
       <style>
          body{margin:40px;}
          .btn-circleadd.btn-lg {
-         width: 50px;
-         height: 50px;
-         padding: 0px 10px;
-         font-size: 30px;
+         width: 25px;
+         height: 25px;
+         padding: 0px 5px;
+         font-size: 15px;
          line-height: 0;
-         border-radius: 25px;
+         border-radius: 12px;
          }
          .btn-circleremove.btn-lg {
-         width: 50px;
-         height: 50px;
+         width: 25px;
+         height: 25px;
          padding: 0px 0px;
-         font-size: 30px;
+         font-size: 15px;
          line-height: 0;
-         border-radius: 25px;
+         border-radius: 12px;
          }
          .btn-circlepaint.btn-lg {
-         width: 50px;
-         height: 50px;
-         padding: 0px 10px;
-         font-size: 30px;
+         width: 25px;
+         height: 25px;
+         padding: 0px 5px;
+         font-size: 15px;
          line-height: 0;
-         border-radius: 25px;
+         border-radius: 12px;
          }
          .first {
          z-index: 3;
@@ -43,7 +43,7 @@
          width:auto;
          }
          .input-lg {
-         font-size: 32px;
+         font-size: 12px;
          }
       </style>
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
@@ -78,14 +78,14 @@
           defaultColor: '#black',
          };
          var mapOptions = {
-          zoom: 6,
+          zoom: 5,
          clickableIcons: false,
          mapTypeControl: false,
          streetViewControl: false,
           center: new google.maps.LatLng(39.8283, -98.5795),
          			draggable: false,
-         			maxZoom: 6,
-         			minZoom: 6,
+         			maxZoom: 5,
+         			minZoom: 5,
          			mapTypeId: google.maps.MapTypeId.ROADMAP,
          			styles: [
          		      {
@@ -139,9 +139,9 @@
             var color = rgbToHex(document.getElementById('color'+curRow).style.backgroundColor);
             $('#word_table').append('<tr id="wordRow'+(nextRow)+'"></tr>');
             var y = document.getElementById("wordRow"+curRow);
-            y.innerHTML = "<td><label class='input-lg'>"+word+"</label></td><td><label><button type='button' id='color"+curRow+"' style='background-color: "+color+";' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></label></td><td><button type='button' id='remove_word' class='btn btn-danger btn-circleremove btn-lg glyphicon glyphicon-remove'></button></td>";
+            y.innerHTML = "<td><label>"+word+"</label></td><td><label><button type='button' id='color"+curRow+"' style='background-color: "+color+";' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></label></td><td><button type='button' id='remove_word' class='btn btn-danger btn-circleremove btn-lg glyphicon glyphicon-remove'></button></td>";
             var y2 = document.getElementById("wordRow"+nextRow);
-            y2.innerHTML = "<td><input type='text' class='form-control input-lg' id='word"+nextRow+"'></td><td><button type='button' style='background-color: #ff0f00' id='color"+nextRow+"' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></td><td><button type='button' id='add_word' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
+            y2.innerHTML = "<td><input type='text' class='form-control' id='word"+nextRow+"'></td><td><button type='button' style='background-color: #ff0f00' id='color"+nextRow+"' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></td><td><button type='button' id='add_word' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
             curRow++; 
          });
            
@@ -469,7 +469,7 @@
                                     </thead>
                                     <tbody>
                                        <tr id="wordRow1">
-                                          <td><input type="text" class="form-control input-lg" id="word1"></td>
+                                          <td><input type="text" class="form-control" id="word1"></td>
                                           <td><button type="button" id="color1" style="background-color: #ff0f00" data-toggle='modal' data-target='#colorPicker' class="btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint"></button></td>
                                           <td><button type="button" id="add_word" class="btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus"></button></td>
                                        </tr>
