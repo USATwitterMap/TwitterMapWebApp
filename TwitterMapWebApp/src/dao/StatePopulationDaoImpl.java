@@ -1,9 +1,16 @@
 package dao;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import resources.Constants;
 
@@ -14,6 +21,7 @@ public class StatePopulationDaoImpl implements StatePopulationDao{
 		int responseCode = 0;
 		try 
 		{
+			ObjectMapper mapper = new ObjectMapper();
 			String url = "http://api.census.gov/data/2010/sf1?key=" + Constants.CENSUS_API_KEY + "&get=P0010001&for=state:" + stateId;
 	
 			URL obj = new URL(url);
@@ -21,8 +29,7 @@ public class StatePopulationDaoImpl implements StatePopulationDao{
 	
 			// optional default is GET
 			con.setRequestMethod("GET");
-			
-			String data = con.getResponseMessage();
+			String data = getStringFromInputStream(con.getInputStream());
 	
 			responseCode = con.getResponseCode();
 		} 
@@ -39,5 +46,35 @@ public class StatePopulationDaoImpl implements StatePopulationDao{
 		
 		return responseCode;
 	}
+	
+	// convert InputStream to String
+		private static String getStringFromInputStream(InputStream is) {
+
+			BufferedReader br = null;
+			StringBuilder sb = new StringBuilder();
+
+			String line;
+			try {
+
+				br = new BufferedReader(new InputStreamReader(is));
+				while ((line = br.readLine()) != null) {
+					sb.append(line);
+				}
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (br != null) {
+					try {
+						br.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+			return sb.toString();
+
+		}
 
 }

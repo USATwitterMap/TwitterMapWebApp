@@ -34,6 +34,8 @@ public class SearchWordsController {
 	@ResponseBody
 	public SingleWordView searchSingle(@RequestBody String[][] search )
 	{
+		popDao.GetPopulation(27);
+		
 		//prepare return structure
 		TwitterWordQuery wordQuery = new TwitterWordQuery();
 		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
