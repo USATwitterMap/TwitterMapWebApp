@@ -10,6 +10,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.ibatis.session.SqlSession;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import resources.Constants;
@@ -17,64 +19,22 @@ import resources.Constants;
 public class StatePopulationDaoImpl implements StatePopulationDao{
 
 	@Override
-	public int GetPopulation(int stateId) {
-		int responseCode = 0;
-		try 
-		{
-			ObjectMapper mapper = new ObjectMapper();
-			String url = "http://api.census.gov/data/2010/sf1?key=" + Constants.CENSUS_API_KEY + "&get=P0010001&for=state:" + stateId;
-	
-			URL obj = new URL(url);
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-	
-			// optional default is GET
-			con.setRequestMethod("GET");
-			String data = getStringFromInputStream(con.getInputStream());
-	
-			responseCode = con.getResponseCode();
-		} 
-		catch (MalformedURLException e) 
-		{
+	public List<StatePopulation> GetPopulation() {
+		SqlSession session = null;
+		List results = null;
+		try {
+			session = ConnectionFactory.GetFactory().openSession();
+			results = session.selectList("StatePopulationMapper.GetPopulation");
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		catch (IOException e) 
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return responseCode;
-	}
-	
-	// convert InputStream to String
-		private static String getStringFromInputStream(InputStream is) {
-
-			BufferedReader br = null;
-			StringBuilder sb = new StringBuilder();
-
-			String line;
-			try {
-
-				br = new BufferedReader(new InputStreamReader(is));
-				while ((line = br.readLine()) != null) {
-					sb.append(line);
-				}
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if (br != null) {
-					try {
-						br.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
+		finally {
+			if(session != null) {
+				session.close();
 			}
-
-			return sb.toString();
-
 		}
+		return results;
+	}
 
 }

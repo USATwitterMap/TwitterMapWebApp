@@ -17,6 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import dao.*;
 import view.SingleWordView;
+import view.TwitterSearchQuery;
 import view.LocationView;
 import view.MultiWordView;
 import view.SearchScreenView;
@@ -32,12 +33,18 @@ public class SearchWordsController {
 	
 	@RequestMapping(value = "searchSingle", method = RequestMethod.POST)
 	@ResponseBody
-	public SingleWordView searchSingle(@RequestBody String[][] search )
-	{
-		popDao.GetPopulation(27);
-		
+	public SingleWordView searchSingle(@RequestBody TwitterSearchQuery query)
+	{	
 		//prepare return structure
 		TwitterWordQuery wordQuery = new TwitterWordQuery();
+		String[][] search = query.getSearchData();
+		
+		List<StatePopulation> populationData = null;
+		if(query.isPopulationControl()) 
+		{
+			populationData = popDao.GetPopulation();
+		}
+		
 		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
 		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
 		wordQuery.setWords(new ArrayList<String>());
@@ -54,7 +61,20 @@ public class SearchWordsController {
 		for(int index = 0; index < results.size(); index++) 
 		{
 			areaMapData[index + 1][0] = "US-" + results.get(index).getState();
-			areaMapData[index + 1][1] = results.get(index).getOccurances();
+			double occurances = results.get(index).getOccurances();
+			if(populationData != null) 
+			{
+				for(StatePopulation population : populationData) 
+				{
+					if(population.getState().equals(results.get(index).getState())) 
+					{
+						occurances = occurances / (population.getPopulation() / 1000000);
+						break;
+					}
+				}
+			}
+			//round to two decimal places and store
+			areaMapData[index + 1][1] = Math.round(occurances * 100.0) / 100.0;
 		}
 		
 		view.setAreaChart(areaMapData);
@@ -63,10 +83,11 @@ public class SearchWordsController {
 	
 	@RequestMapping(value = "searchMultiple", method = RequestMethod.POST)
 	@ResponseBody
-	public MultiWordView searchMultiple(@RequestBody String[][] search )
+	public MultiWordView searchMultiple(@RequestBody TwitterSearchQuery query)
 	{
 		//prepare return structure
 		TwitterWordQuery wordQuery = new TwitterWordQuery();
+		String[][] search = query.getSearchData();
 		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
 		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
 		wordQuery.setWords(new ArrayList<String>());

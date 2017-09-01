@@ -1,6 +1,7 @@
 package dao;
 
+import java.util.List;
 
 public interface StatePopulationDao {
-	public int GetPopulation(int stateId);
+	public List<StatePopulation> GetPopulation();
 }

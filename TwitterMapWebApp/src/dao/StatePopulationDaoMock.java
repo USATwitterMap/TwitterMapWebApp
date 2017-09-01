@@ -1,11 +1,22 @@
 package dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import controller.StateLocations;
+
 public class StatePopulationDaoMock implements StatePopulationDao{
 
 	@Override
-	public int GetPopulation(int stateId) {
+	public List<StatePopulation> GetPopulation() {
 		// TODO Auto-generated method stub
-		return 0;
+		List<StatePopulation> fakeStateData = new ArrayList<StatePopulation>();
+		for(StateLocations state : StateLocations.values()){
+			fakeStateData.add(new StatePopulation());
+			fakeStateData.get(fakeStateData.size() - 1).setState(state.getStateAbbr());
+			fakeStateData.get(fakeStateData.size() - 1).setPopulation(5000000);
+		}
+		return fakeStateData;
 	}
 
 }

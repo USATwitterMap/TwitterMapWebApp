@@ -16,5 +16,6 @@
   </environments>
   <mappers>
     <mapper resource="resources/TwitterWordMapper.xml"/>
+    <mapper resource="resources/StatePopulationMapper.xml"/>
   </mappers>
 </configuration>

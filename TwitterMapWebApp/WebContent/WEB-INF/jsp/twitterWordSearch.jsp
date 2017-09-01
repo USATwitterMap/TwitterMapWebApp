@@ -223,13 +223,14 @@
          			  wordDetails.push(time);
          			  searchData.push(wordDetails);
          		  }
+         		 var query = { "searchData": searchData, "populationControl": false };
          		  if(searchData.length == 1) 
          		  {
-         		  	searchSingle(searchData);
+         		  	searchSingle(query);
          		  }
          		  else if(searchData.length >1) 
          		  {
-           		  	searchMultiple(searchData);
+           		  	searchMultiple(query);
            		  }
          		})
          	});
