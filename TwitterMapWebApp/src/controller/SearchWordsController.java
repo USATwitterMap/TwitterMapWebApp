@@ -3,9 +3,11 @@ package controller;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import dao.*;
 import view.SingleWordView;
+import view.SystemHealthView;
 import view.TwitterSearchQuery;
 import view.LocationView;
 import view.MultiWordView;
@@ -68,7 +71,15 @@ public class SearchWordsController {
 				{
 					if(population.getState().equals(results.get(index).getState())) 
 					{
-						occurances = occurances / (population.getPopulation() / 1000000);
+						double factor = population.getPopulation() / 1000000;
+						if(factor > 0) 
+						{						
+							occurances = occurances / factor;
+						}
+						else 
+						{
+							occurances = 0;
+						}
 						break;
 					}
 				}
@@ -121,6 +132,40 @@ public class SearchWordsController {
 			locationCounter++;
 		}
 		return view;
+	}
+	
+	
+	@RequestMapping(value = "getSystemHealth", method = RequestMethod.POST)
+	@ResponseBody
+	public SystemHealthView getSystemHealth()
+	{
+		SystemHealthView systemHealth =new SystemHealthView();
+		List<SystemDiag> systemHealthResults = wordsDao.GetSystemHealth();
+		Calendar latestDate  = Calendar.getInstance();
+		Calendar currentDate  = Calendar.getInstance();
+		
+		List<long[]> systemDiagnosticData = new ArrayList<long[]>();
+		
+		for(int diagnosticIndex = 0; diagnosticIndex < systemHealthResults.size(); diagnosticIndex++)
+		{
+			if(systemDiagnosticData.size() > 0 ) 
+			{
+				latestDate.setTime(new Date(systemDiagnosticData.get(systemDiagnosticData.size() - 1)[0]));
+				currentDate.setTime(systemHealthResults.get(diagnosticIndex).getForDate());
+				while((currentDate.getTimeInMillis() - latestDate.getTimeInMillis()) > (TimeUnit.DAYS.toMillis(1) + 1)) 
+				{
+					latestDate.add(Calendar.DATE, 1);
+					systemDiagnosticData.add(new long[] {latestDate.getTime().getTime(), 24});
+				}
+			}
+			systemDiagnosticData.add(new long[] {systemHealthResults.get(diagnosticIndex).getForDate().getTime(), systemHealthResults.get(diagnosticIndex).getNumPosts()});
+		}
+		systemHealth.setSystemHealth(new long[systemDiagnosticData.size()][2]);
+		for(int diagnosticIndex = 0; diagnosticIndex < systemDiagnosticData.size(); diagnosticIndex++)
+		{
+			systemHealth.getSystemHealth()[diagnosticIndex] = systemDiagnosticData.get(diagnosticIndex);
+		}
+		return systemHealth;
 	}
 	
 	@RequestMapping(value = "twitterTimeWindow", method = RequestMethod.GET)

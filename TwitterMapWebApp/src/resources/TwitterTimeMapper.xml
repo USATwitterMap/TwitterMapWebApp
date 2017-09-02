@@ -7,9 +7,16 @@
 	   <result property = "endTime" column = "endTime"/>
 	   <result property = "startTime" column = "startTime"/>
 	</resultMap>
+	
+	<resultMap id = "systemDiagResult" type = "dao.SystemDiag">
+	   <result property = "forDate" column = "forDate"/>
+	   <result property = "numPosts" column = "numPosts"/>
+	</resultMap>
 
-   <select id = "GetTimeBetween" resultMap = "timeResult">
-   		SELECT * FROM Times where startTime &lt;= #{requestedTime} AND endTime &gt; #{requestedTime}; 
+   <select id = "GetSystemDiagnostics" resultType = "dao.SystemDiag">
+   		SELECT DATE(t.startTime) AS forDate, GREATEST(24 - COUNT(*), 0) AS numPosts FROM 
+   		Times t WHERE (SELECT COUNT(*) FROM Words w WHERE w.time=t.id) &gt; 0 AND 
+   		DATE(LOCALTIMESTAMP) != DATE(t.startTime) GROUP BY DATE(t.startTime) ORDER BY forDate;
    </select>
    
    <select id = "GetTimeRange" resultType="dao.TwitterTime">

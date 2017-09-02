@@ -45,6 +45,14 @@
          .input-lg {
          font-size: 12px;
          }
+         .systemHealth{
+		 	position: absolute;
+		  bottom: 0px;
+		  margin-right: auto;
+		  margin-left: auto;
+		  left: 0px;
+		  right: 0px;
+		 }
       </style>
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
       <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -56,15 +64,13 @@
       <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
       <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
       <script>
-         google.charts.load( 'visualization', '1', { packages:['corechart'] });
          google.charts.load('current', {
-         'packages':['geochart'],
+         'packages':['corechart', 'calendar'],
          // Note: you will need to get a mapsApiKey for your project.
          // See: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings
          'mapsApiKey': 'AIzaSyCd9uxfx1yJarUMlvGVOTNEhiDZHCKbEvU'
          });
          google.charts.setOnLoadCallback(drawRegionsMap);
-         
          function drawRegionsMap() {
          var data = google.visualization.arrayToDataTable([
           ['State', 'Word'],
@@ -118,17 +124,17 @@
           			  } 
          			]
          };
-         geochart = new google.visualization.GeoChart(document.getElementById('geochart-colors'));
-           geochart.draw(data, {region: "US", resolution: "provinces"});
+         
+          geochart = new google.visualization.GeoChart(document.getElementById('geochart-colors'));
+          geochart.draw(data, {region: "US", resolution: "provinces"});
           earthchart = new google.maps.Map(document.getElementById('earthchart-colors'), mapOptions);
-          google.visualization.events.addListener(geochart, 'ready', function () {
-           	test ="";
-           });
+          calendarChart = new google.visualization.Calendar(document.getElementById('calendar_basic'));
          };
       </script>
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
       <script>
-         var geochart 
+         var geochart;
+         var calendarChart;
          var earthchart;
          var projection;
          var stateMarkers = [];
@@ -150,6 +156,7 @@
          });
            var maxColorColumnsAndRows = 10;
            $( document ).ready(function() {
+        	   retrieveSystemHealth();
          	  ChartMarker.prototype = new google.maps.OverlayView;
          
          	  ChartMarker.prototype.onAdd = function() {
@@ -223,7 +230,7 @@
          			  wordDetails.push(time);
          			  searchData.push(wordDetails);
          		  }
-         		 var query = { "searchData": searchData, "populationControl": false };
+         		 var query = { "searchData": searchData, "populationControl": $("#PopControl").is(':checked') };
          		  if(searchData.length == 1) 
          		  {
          		  	searchSingle(query);
@@ -387,6 +394,42 @@
          });
           }
           
+          function retrieveSystemHealth() {
+              $.ajax({
+                       	 type: "POST",
+                        contentType: "application/json",
+                        url: "getSystemHealth",
+                        dataType: 'json',
+                        headers: { 
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json' 
+                        },
+                        timeout: 10000,
+                        success: function (systemHealthData) {                       	 
+                       	var dataTable = new google.visualization.DataTable();
+                       	
+                        dataTable.addColumn({ type: 'date', id: 'Date' });
+                        dataTable.addColumn({ type: 'number', id: 'Won/Loss' });
+                        var arrayLength = systemHealthData.systemHealth.length;
+                        for (var i = 0; i < arrayLength; i++) {
+                        	dataTable.addRow([new Date(systemHealthData.systemHealth[i][0]), systemHealthData.systemHealth[i][1]]);
+                        }
+                        var calOptions = {
+                        };
+                        calendarChart.draw(dataTable, calOptions);
+                        },
+                        fail: function () 
+                        {
+                       	var test = 1; 
+                        },
+                        always : function() 
+                        { 
+                     	var test2 = 1; 
+                        }
+                        
+            });
+             }
+          
           function ChartMarker( options ) {
             this.setValues( options );
             
@@ -498,9 +541,29 @@
                         </div>
                      </div>
                   </div>
-                  <div class="panel-body first collaspe in">
+                  <div class="panel-body first collapse in">
                      <button id="search" type="button" class="btn btn-primary">Search</button>
+                     <label><input id="PopControl" type="checkbox" value="">Control for population</label>
                   </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      
+      <div class="container first systemHealth">
+         <!-- Root accordian -->
+         <div class="panel-group first" id="accordionHealthControls">
+            <div class="panel panel-default first">
+               <div class="panel-heading first">
+                  <h4 class="panel-title first" style="text-align: center;">
+                     <a class="panel-toggle first" data-toggle="collapse" data-parent="#accordionHealthControls" href=".collapseHealthTarget">
+                     System Health
+                     </a>
+                  </h4>
+               </div>
+                <div class="collapseHealthTarget panel-body first collapse in">
+                	<div id="calendar_basic"></div>
+                </div>
                </div>
             </div>
          </div>

@@ -17,5 +17,6 @@
   <mappers>
     <mapper resource="resources/TwitterWordMapper.xml"/>
     <mapper resource="resources/StatePopulationMapper.xml"/>
+    <mapper resource="resources/TwitterTimeMapper.xml"/>
   </mappers>
 </configuration>

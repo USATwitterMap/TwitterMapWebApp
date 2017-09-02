@@ -24,4 +24,42 @@ public class TwitterDataDaoImpl implements TwitterDataDao {
 		}
 		return results;
 	}
+	
+	public List<SystemDiag> GetSystemHealth() 
+	{
+		SqlSession session = null;
+		List results = null;
+		try {
+			session = ConnectionFactory.GetFactory().openSession();
+			results = session.selectList("TwitterTimeMapper.GetSystemDiagnostics");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally {
+			if(session != null) {
+				session.close();
+			}
+		}
+		return results;
+	}
+	
+	public List<TwitterTime> GetTimeRange()
+	{
+		SqlSession session = null;
+		List results = null;
+		try {
+			session = ConnectionFactory.GetFactory().openSession();
+			results = session.selectList("TwitterTimeMapper.GetTimeRange");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally {
+			if(session != null) {
+				session.close();
+			}
+		}
+		return results;
+	}
 }
