@@ -59,7 +59,7 @@
       <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-      <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCd9uxfx1yJarUMlvGVOTNEhiDZHCKbEvU&sensor=false"></script>
+      <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCd9uxfx1yJarUMlvGVOTNEhiDZHCKbEvU"></script>
       <!-- Include Date Range Picker -->
       <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
       <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
@@ -90,8 +90,8 @@
          streetViewControl: false,
           center: new google.maps.LatLng(39.8283, -98.5795),
          			draggable: false,
-         			maxZoom: 5,
-         			minZoom: 5,
+         			maxZoom: 8,
+         			minZoom: 4,
          			mapTypeId: google.maps.MapTypeId.ROADMAP,
          			styles: [
          		      {
@@ -156,6 +156,7 @@
          });
            var maxColorColumnsAndRows = 10;
            $( document ).ready(function() {
+        	   
         	   retrieveSystemHealth();
          	  ChartMarker.prototype = new google.maps.OverlayView;
          
@@ -239,6 +240,7 @@
          		  {
            		  	searchMultiple(query);
            		  }
+         		 $('.collapse').collapse('hide');
          		})
          	});
            
@@ -415,6 +417,7 @@
                         	dataTable.addRow([new Date(systemHealthData.systemHealth[i][0]), systemHealthData.systemHealth[i][1]]);
                         }
                         var calOptions = {
+                        	colorAxis: {minValue: 0, maxValue: 24, colors: ['#00FF00', '#FF0000']}
                         };
                         calendarChart.draw(dataTable, calOptions);
                         },
@@ -491,7 +494,7 @@
                      </a>
                   </h4>
                </div>
-               <div class="collapseTarget collaspe in">
+               <div class="collapseTarget collapse in">
                   <!-- Here we insert another nested accordion -->
                   <div id="collapseWords" class="panel-body first">
                      <div class="panel-inner first">
@@ -541,7 +544,7 @@
                         </div>
                      </div>
                   </div>
-                  <div class="panel-body first collapse in">
+                  <div class="panel-body first">
                      <button id="search" type="button" class="btn btn-primary">Search</button>
                      <label><input id="PopControl" type="checkbox" value="">Control for population</label>
                   </div>
