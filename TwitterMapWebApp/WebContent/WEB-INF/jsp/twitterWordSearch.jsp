@@ -60,6 +60,13 @@
          left:50%; 
          top:50%;
          }
+         #loading-indicator-calendar {
+         left:50%; 
+         top:50%;
+         }
+         .btn-space {
+         margin-top: 10px;
+         }
       </style>
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
       <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -208,16 +215,6 @@
          	    $('#loading-indicator').hide();
          	});
          	  
-         	  $(function() {
-         		    $('input[name="daterange"]').daterangepicker({
-         		        timePicker: true,
-         		        timePickerIncrement: 30,
-         		        locale: {
-         		            format: 'YYYY-MM-DD HH:mm'
-         		        }
-         		    });
-         		});
-         	  
          	  var rowcontent = ""
          	  for (rowNum = 1; rowNum <= maxColorColumnsAndRows; rowNum++) { 
          		$('#color_table').append('<tr id="colorRow'+rowNum+'"></tr>');
@@ -234,6 +231,10 @@
          	  $('#colorPicker').on('shown.bs.modal', function(e) { 
              	  colorInvoker = e.relatedTarget;
              	});
+         	  
+          	 $('#findPopular').click(function(){
+          		$("#popularTermsDisplay").modal('show');
+          	 });
          	  
          	  $('#search').on('click', function (e) {
          		  var searchData = [];
@@ -367,6 +368,8 @@
                      success: function (rawStateData) {
                     	 document.getElementById("earthchart-colors").style.zIndex = "2";
                     	 document.getElementById("geochart-colors").style.zIndex = "1";
+                    	 document.getElementById("earthchart-colors").style.opacity = "1.0";
+                    	 document.getElementById("geochart-colors").style.opacity = "0.0";
                     	 for(var i = 0; i < rawStateData.locations.length; i++)
                     	 {
                     	  var colorData = [];
@@ -429,6 +432,8 @@
                      success: function (rawStateData) {
                     	 document.getElementById("geochart-colors").style.zIndex = "2";
                     	 document.getElementById("earthchart-colors").style.zIndex = "1";
+                    	 document.getElementById("earthchart-colors").style.opacity = "0.0";
+                    	 document.getElementById("geochart-colors").style.opacity = "1.0";
                     	 var data = google.visualization.arrayToDataTable(rawStateData.areaChart);
           	        var options = {
           	          region: 'US', 
@@ -452,6 +457,7 @@
           }
           
           function retrieveSystemHealth() {
+           $('#loading-indicator-calendar').show();
               $.ajax({
                        	 type: "POST",
                         contentType: "application/json",
@@ -486,6 +492,7 @@
                         document.getElementById('calendar_basic').setAttribute("style","width:1000px");
                         calendarChart.draw(dataTable, calOptions);
                         $(".container-fluid").animate({scrollLeft: (lowestMonth / 12) * 1000}, 800);
+                        $('#loading-indicator-calendar').hide();
                         },
                         fail: function () 
                         {
@@ -493,10 +500,11 @@
                         },
                         always : function() 
                         { 
-                     	var test2 = 1; 
+                        	
                         }
                         
             });
+              
              }
           
           function ChartMarker( options ) {
@@ -524,8 +532,8 @@
       </script>  
    </head>
    <body>
-      <!-- Modal -->
       <img src="${pageContext.request.contextPath}/images/loadingAjax.gif" id="loading-indicator" style="display:none" class="top"/>
+      <!-- Modal color picker -->
       <div id="colorPicker" class="modal fade" role="dialog" style="text-align: center;">
          <div class="modal-dialog" style="width: auto !important;display: inline-block;">
             <!-- Modal content-->
@@ -543,6 +551,34 @@
                      <tbody>
                      </tbody>
                   </table>
+               </div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- Modal popular terms -->
+      <div id="popularTermsDisplay" class="modal fade" role="dialog" style="text-align: center;">
+         <div class="modal-dialog" style="width: auto !important;display: inline-block;">
+            <!-- Modal content-->
+            <div class="modal-content">
+               <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  <h4 class="modal-title">Popular Terms For Selected Dates</h4>
+               </div>
+               <div class="modal-body">
+                  <!-- 
+                     <table class="table" id="popular_terms_table" style="border-collapse:collapse;border-spacing:0;margin:0;padding:0;border:0;width:auto;">
+                        <thead>
+                           <tr>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                     </table>
+                      -->
+                  TODO
                </div>
                <div class="modal-footer">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -609,6 +645,7 @@
                                     <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
                                     <span></span> <b class="caret"></b>
                                  </div>
+                                 <button id="findPopular" type="button" class="btn btn-default btn-space">View Popular Terms</button>
                               </div>
                            </div>
                         </div>
@@ -627,6 +664,7 @@
                               <div class="panel-body first">
                                  <div  id="calendar_scroll" class="panel-body first container-fluid ">
                                     <div id="calendar_basic" class="systemHealth"></div>
+                                    <img src="${pageContext.request.contextPath}/images/loadingAjax.gif" id="loading-indicator-calendar" style="display:none" class="top"/>
                                  </div>
                               </div>
                            </div>
@@ -641,7 +679,7 @@
             </div>
          </div>
       </div>
-      <div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1;"></div>
+      <div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1; opacity:0.0;"></div>
       <div id="earthchart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:2;"></div>
    </body>
 </html>
