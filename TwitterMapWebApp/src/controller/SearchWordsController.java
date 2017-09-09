@@ -155,7 +155,7 @@ public class SearchWordsController {
 				while((currentDate.getTimeInMillis() - latestDate.getTimeInMillis()) > (TimeUnit.DAYS.toMillis(1) + 1)) 
 				{
 					latestDate.add(Calendar.DATE, 1);
-					systemDiagnosticData.add(new long[] {latestDate.getTime().getTime(), 24});
+					systemDiagnosticData.add(new long[] {latestDate.getTime().getTime(), 23});
 				}
 			}
 			systemDiagnosticData.add(new long[] {systemHealthResults.get(diagnosticIndex).getForDate().getTime(), systemHealthResults.get(diagnosticIndex).getNumPosts()});

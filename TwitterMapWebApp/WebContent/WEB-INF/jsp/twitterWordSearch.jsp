@@ -28,6 +28,9 @@
          line-height: 0;
          border-radius: 12px;
          }
+         .top {
+         z-index: 4;
+         }
          .first {
          z-index: 3;
          }
@@ -46,13 +49,17 @@
          font-size: 12px;
          }
          .systemHealth{
-		 	position: absolute;
-		  bottom: 0px;
-		  margin-right: auto;
-		  margin-left: auto;
-		  left: 0px;
-		  right: 0px;
-		 }
+         display: inline-block;
+         width:auto;
+         }
+         .container-fluid {
+         overflow-x:scroll;white-space: nowrap;
+         }
+         #loading-indicator {
+         position: absolute;
+         left:50%; 
+         top:50%;
+         }
       </style>
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
       <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -147,7 +154,8 @@
             var y = document.getElementById("wordRow"+curRow);
             y.innerHTML = "<td><label>"+word+"</label></td><td><label><button type='button' id='color"+curRow+"' style='background-color: "+color+";' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></label></td><td><button type='button' id='remove_word' class='btn btn-danger btn-circleremove btn-lg glyphicon glyphicon-remove'></button></td>";
             var y2 = document.getElementById("wordRow"+nextRow);
-            y2.innerHTML = "<td><input type='text' class='form-control' id='word"+nextRow+"'></td><td><button type='button' style='background-color: #ff0f00' id='color"+nextRow+"' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></td><td><button type='button' id='add_word' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
+            var newColor = rainbow(maxColorColumnsAndRows * maxColorColumnsAndRows, getRandomInt(0, maxColorColumnsAndRows * maxColorColumnsAndRows));
+            y2.innerHTML = "<td><input type='text' class='form-control' id='word"+nextRow+"'></td><td><button type='button' style='background-color: "+newColor+"' id='color"+nextRow+"' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></td><td><button type='button' id='add_word' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
             curRow++; 
          });
            
@@ -156,8 +164,10 @@
          });
            var maxColorColumnsAndRows = 10;
            $( document ).ready(function() {
-        	   
-        	   retrieveSystemHealth();
+            
+            retrieveSystemHealth();
+           
+         
          	  ChartMarker.prototype = new google.maps.OverlayView;
          
          	  ChartMarker.prototype.onAdd = function() {
@@ -189,7 +199,15 @@
          	      this.chart = new google.visualization.PieChart( this.$inner[0] );
          	      this.chart.draw( this.get('chartData'), this.get('chartOptions') );
          	  };
-         	      	  
+         	      
+         	 $(document).ajaxSend(function(event, request, settings) {
+         	    $('#loading-indicator').show();
+         	});
+         
+         	$(document).ajaxComplete(function(event, request, settings) {
+         	    $('#loading-indicator').hide();
+         	});
+         	  
          	  $(function() {
          		    $('input[name="daterange"]').daterangepicker({
          		        timePicker: true,
@@ -221,7 +239,7 @@
          		  var searchData = [];
          		  var table = $('#word_table')[0];
          		  var rows = table.rows;
-         		  var time = $('#startEndTime')[0].value;
+         		  var time = $('#startEndTime span')[0].innerText;
          		  for (var i = 1; i < rows.length-1; i++) {
          			  var wordDetails = [];
          			  wordDetails.push(rows[i].children[0].textContent);
@@ -245,6 +263,43 @@
          	});
            
            var colorInvoker;
+           $(function() {
+         
+             var start = moment().subtract(7, 'days');
+             var end = moment();
+         
+             function cb(start, end) {
+             	start.set({minute:0,second:0,millisecond:0});
+             	end.set({minute:0,second:0,millisecond:0});
+                 $('#startEndTime span').html(start.format('YYYY-MM-DD HH') + ' - ' + end.format('YYYY-MM-DD HH'));
+             }
+             
+             $('#startEndTime').daterangepicker({
+                 startDate: start,
+                 endDate: end,
+                 timePicker: true,
+                 timePickerIncrement: 60,
+                 timePicker24Hour: true,
+                 maxDate: moment(),
+                 opens: 'right',
+                 ranges: {
+                    'Last Week': [start, end],
+                    'Week Prior': [moment().subtract(14, 'days'), moment().subtract(7, 'days')],
+                    'Last 30 Days': [moment().subtract(30, 'days'), moment()],
+                    'This Year': [moment().subtract(1, 'year'), moment()]
+                 },
+         	    locale: {
+                     format: 'YYYY-MM-DD HH'
+                 }
+             }, cb);
+         
+             cb(start, end);
+             
+         });
+           
+           function getRandomInt(min, max) {
+             return Math.floor(Math.random() * (max - min + 1)) + min;
+         }
            
            function componentFromStr(numStr, percent) {
          	    var num = Math.max(0, parseInt(numStr, 10));
@@ -308,7 +363,7 @@
                          'Accept': 'application/json',
                          'Content-Type': 'application/json' 
                      },
-                     timeout: 10000,
+                     timeout: 60000,
                      success: function (rawStateData) {
                     	 document.getElementById("earthchart-colors").style.zIndex = "2";
                     	 document.getElementById("geochart-colors").style.zIndex = "1";
@@ -370,7 +425,7 @@
                          'Accept': 'application/json',
                          'Content-Type': 'application/json' 
                      },
-                     timeout: 10000,
+                     timeout: 60000,
                      success: function (rawStateData) {
                     	 document.getElementById("geochart-colors").style.zIndex = "2";
                     	 document.getElementById("earthchart-colors").style.zIndex = "1";
@@ -413,13 +468,24 @@
                         dataTable.addColumn({ type: 'date', id: 'Date' });
                         dataTable.addColumn({ type: 'number', id: 'Won/Loss' });
                         var arrayLength = systemHealthData.systemHealth.length;
+                        var lowestMonth = 12;
                         for (var i = 0; i < arrayLength; i++) {
-                        	dataTable.addRow([new Date(systemHealthData.systemHealth[i][0]), systemHealthData.systemHealth[i][1]]);
+                        	var resolvedDate = new Date(systemHealthData.systemHealth[i][0]);
+                        	dataTable.addRow([resolvedDate, systemHealthData.systemHealth[i][1]]);
+                        	if(lowestMonth > resolvedDate.getMonth()) 
+                        	{
+                        		lowestMonth = resolvedDate.getMonth();
+                        	}
                         }
+                        
                         var calOptions = {
-                        	colorAxis: {minValue: 0, maxValue: 24, colors: ['#00FF00', '#FF0000']}
+                       		title: "Red Sox Attendance",
+                       		colorAxis: {minValue: 0, maxValue: 23, colors: ['#00FF00', '#FF0000']},
+                        	width: '1000px'
                         };
+                        document.getElementById('calendar_basic').setAttribute("style","width:1000px");
                         calendarChart.draw(dataTable, calOptions);
+                        $(".container-fluid").animate({scrollLeft: (lowestMonth / 12) * 1000}, 800);
                         },
                         fail: function () 
                         {
@@ -459,6 +525,7 @@
    </head>
    <body>
       <!-- Modal -->
+      <img src="${pageContext.request.contextPath}/images/loadingAjax.gif" id="loading-indicator" style="display:none" class="top"/>
       <div id="colorPicker" class="modal fade" role="dialog" style="text-align: center;">
          <div class="modal-dialog" style="width: auto !important;display: inline-block;">
             <!-- Modal content-->
@@ -488,7 +555,7 @@
          <div class="panel-group first" id="accordionControls">
             <div class="panel panel-default first">
                <div class="panel-heading first">
-                  <h4 class="panel-title first">
+                  <h4 class="panel-title first" style="text-align: center">
                      <a class="panel-toggle first" data-toggle="collapse" data-parent="#accordionControls" href=".collapseTarget">
                      Search Controls
                      </a>
@@ -501,7 +568,7 @@
                         <div class="panel-group first" id="accordionWords">
                            <div class="panel panel-default first">
                               <div class="panel-heading first">
-                                 <h4 class="panel-title first">
+                                 <h4 class="panel-title first" style="text-align: center">
                                     Word
                                  </h4>
                               </div>
@@ -533,12 +600,34 @@
                         <div class="panel-group first" id="accordionDates">
                            <div class="panel panel-default first">
                               <div class="panel-heading first">
-                                 <h4 class="panel-title first">
+                                 <h4 class="panel-title first" style="text-align: center">
                                     Dates
                                  </h4>
                               </div>
                               <div class="panel-body first">
-                                 <input type="text" id="startEndTime" name="daterange" value="2017-08-09 01:30 - 2017-08-12 02:00" />
+                                 <div id="startEndTime" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                                    <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
+                                    <span></span> <b class="caret"></b>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <!-- Here we insert another nested accordion -->
+                  <div id="collapseHealth" class="panel-body first">
+                     <div class="panel-inner first">
+                        <div class="panel-group first" id="accordionDates">
+                           <div class="panel panel-default first">
+                              <div class="panel-heading first">
+                                 <h4 class="panel-title first" style="text-align: center">
+                                    System Health
+                                 </h4>
+                              </div>
+                              <div class="panel-body first">
+                                 <div  id="calendar_scroll" class="panel-body first container-fluid ">
+                                    <div id="calendar_basic" class="systemHealth"></div>
+                                 </div>
                               </div>
                            </div>
                         </div>
@@ -552,27 +641,6 @@
             </div>
          </div>
       </div>
-      
-      <div class="container first systemHealth">
-         <!-- Root accordian -->
-         <div class="panel-group first" id="accordionHealthControls">
-            <div class="panel panel-default first">
-               <div class="panel-heading first">
-                  <h4 class="panel-title first" style="text-align: center;">
-                     <a class="panel-toggle first" data-toggle="collapse" data-parent="#accordionHealthControls" href=".collapseHealthTarget">
-                     System Health
-                     </a>
-                  </h4>
-               </div>
-                <div class="collapseHealthTarget panel-body first collapse in">
-                	<div id="calendar_basic"></div>
-                </div>
-               </div>
-            </div>
-         </div>
-      </div>
-      <!-- Root accordian ends here -->
-      </div><!-- /lf-container --> 
       <div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1;"></div>
       <div id="earthchart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:2;"></div>
    </body>
