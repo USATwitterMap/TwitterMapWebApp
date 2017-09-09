@@ -479,7 +479,7 @@
                         }
                         
                         var calOptions = {
-                       		title: "Red Sox Attendance",
+                       		title: "System Downtime - Missing Data",
                        		colorAxis: {minValue: 0, maxValue: 23, colors: ['#00FF00', '#FF0000']},
                         	width: '1000px'
                         };
