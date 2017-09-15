@@ -15,7 +15,7 @@
     
 	<bean id="wordsDao" class="dao.TwitterDataDaoImpl" />
 	<bean id="popDao" class="dao.StatePopulationDaoImpl" />
-	<!-- <bean id="wordsDao" class="dao.TwitterDataDaoMock" />-->
+	<bean id="popularTermsDao" class="dao.PopularTermsDaoImpl" />
 
 	<bean class = "org.springframework.web.servlet.view.InternalResourceViewResolver">
 	      <property name = "prefix" value = "/WEB-INF/jsp/" />

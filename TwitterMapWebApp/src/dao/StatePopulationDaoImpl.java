@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dao.results.StatePopulation;
 import resources.Constants;
 
 public class StatePopulationDaoImpl implements StatePopulationDao{

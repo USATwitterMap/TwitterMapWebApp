@@ -157,7 +157,7 @@
          	  nextRow=curRow + 1;
             var word = document.getElementById('word'+curRow).value;
             var color = rgbToHex(document.getElementById('color'+curRow).style.backgroundColor);
-            $('#word_table').append('<tr id="wordRow'+(nextRow)+'"></tr>');
+            $('#word_table > tbody:last-child').append('<tr id="wordRow'+(nextRow)+'"></tr>');
             var y = document.getElementById("wordRow"+curRow);
             y.innerHTML = "<td><label>"+word+"</label></td><td><label><button type='button' id='color"+curRow+"' style='background-color: "+color+";' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></label></td><td><button type='button' id='remove_word' class='btn btn-danger btn-circleremove btn-lg glyphicon glyphicon-remove'></button></td>";
             var y2 = document.getElementById("wordRow"+nextRow);
@@ -233,6 +233,10 @@
              	});
          	  
           	 $('#findPopular').click(function(){
+          		var time = $('#startEndTime span')[0].innerText;
+          		var query = {"searchTime": time};
+          		$("#popular_terms_table > tbody").html("");
+          		searchPopularTerms(query);
           		$("#popularTermsDisplay").modal('show');
           	 });
          	  
@@ -308,6 +312,19 @@
          	        Math.floor(255 * Math.min(100, num) / 100) : Math.min(255, num);
          	}
          
+           function addWord(word) 
+           {
+        	   nextRow=curRow + 1;
+               var color = rainbow(maxColorColumnsAndRows * maxColorColumnsAndRows, getRandomInt(0, maxColorColumnsAndRows * maxColorColumnsAndRows));
+               $('#word_table > tbody:last-child').append('<tr id="wordRow'+(nextRow)+'"></tr>');
+               var y = document.getElementById("wordRow"+curRow);
+               y.innerHTML = "<td><label>"+word+"</label></td><td><label><button type='button' id='color"+curRow+"' style='background-color: "+color+";' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></label></td><td><button type='button' id='remove_word' class='btn btn-danger btn-circleremove btn-lg glyphicon glyphicon-remove'></button></td>";
+               var y2 = document.getElementById("wordRow"+nextRow);
+               var newColor = rainbow(maxColorColumnsAndRows * maxColorColumnsAndRows, getRandomInt(0, maxColorColumnsAndRows * maxColorColumnsAndRows));
+               y2.innerHTML = "<td><input type='text' class='form-control' id='word"+nextRow+"'></td><td><button type='button' style='background-color: "+newColor+"' id='color"+nextRow+"' data-toggle='modal' data-target='#colorPicker' class='btn btn-danger btn-circlepaint btn-lg glyphicon glyphicon-tint'></button></td><td><button type='button' id='add_word' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
+               curRow++; 
+           }
+           
          	function rgbToHex(rgb) {
          	    var rgbRegex = /^rgb\(\s*(-?\d+)(%?)\s*,\s*(-?\d+)(%?)\s*,\s*(-?\d+)(%?)\s*\)$/;
          	    var result, r, g, b, hex = "";
@@ -415,6 +432,41 @@
                      
          });
           }
+         
+         function searchPopularTerms(searchData) {
+             var obj = searchData;
+             $.ajax({
+                      	 type: "POST",
+                       contentType: "application/json",
+                       url: "searchPopularTerms",
+                       data: JSON.stringify(obj),
+                       dataType: 'json',
+                       headers: { 
+                           'Accept': 'application/json',
+                           'Content-Type': 'application/json' 
+                       },
+                       timeout: 60000,
+                       success: function (popularData) {
+                   	   	  for(var i = 0; i < popularData.results.length; i++) 
+                   		  {
+                   	      	$('#popular_terms_table > tbody:last-child').append('<tr id="popularRow'+i+'"></tr>');
+                   	     	var y = document.getElementById("popularRow"+i);
+                        	y.innerHTML = "<td>" + popularData.results[i] + "</td><td><button type='button' id='add_pop_word' onclick=\"addWord('"+popularData.results[i]+"')\"' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
+                   		  }
+
+                       },
+                       fail: function () 
+                       {
+                      	var test = 1; 
+                       },
+                       always : function() 
+                       { 
+                    	var test2 = 1; 
+                       }
+                       
+           });
+            }
+            
          
           function searchSingle(searchData) {
            var obj = searchData;
@@ -568,17 +620,16 @@
                   <h4 class="modal-title">Popular Terms For Selected Dates</h4>
                </div>
                <div class="modal-body">
-                  <!-- 
-                     <table class="table" id="popular_terms_table" style="border-collapse:collapse;border-spacing:0;margin:0;padding:0;border:0;width:auto;">
+                     <table class="table" id="popular_terms_table" style="border-collapse:collapse;border-spacing:0;margin:0;padding:0;border:0;width:auto;width:100%;">
                         <thead>
                            <tr>
+                           <th>Word</th>
+                           <th></th>
                            </tr>
                         </thead>
                         <tbody>
                         </tbody>
                      </table>
-                      -->
-                  TODO
                </div>
                <div class="modal-footer">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

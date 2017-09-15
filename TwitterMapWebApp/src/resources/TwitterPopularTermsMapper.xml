@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "TwitterPopularTermsMapper">
+   	
+   <select id = "GetPopularTerms" resultType = "String">
+   	select p.word, p.occurances from PopularTerms p join Times startTimes on startTimes.id = p.startTime join Times endTimes on endTimes.id = p.endTime 
+   	where endTimes.endTime &gt;= #{startDate} and startTimes.startTime &lt;= #{stopDate} and p.word NOT LIKE '%?%' order by occurances desc limit 10;
+   </select>
+</mapper>

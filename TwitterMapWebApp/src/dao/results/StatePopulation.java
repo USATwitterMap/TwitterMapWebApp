@@ -1,4 +1,4 @@
-package dao;
+package dao.results;
 
 public class StatePopulation {
 	private String state;

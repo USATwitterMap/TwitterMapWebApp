@@ -1,16 +1,8 @@
-package dao;
+package dao.queries;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
-public class TwitterWordQuery {
-	
-	private List<String> words;
+public class StartStopDateQuery {
 	private String startDate;
 	private String stopDate;
-	
 	public String getStartDate() {
 		return startDate;
 	}
@@ -22,11 +14,5 @@ public class TwitterWordQuery {
 	}
 	public void setStopDate(String stopDate) {
 		this.stopDate = stopDate;
-	}
-	public List<String> getWords() {
-		return words;
-	}
-	public void setWords(List<String> words) {
-		this.words = words;
 	}
 }

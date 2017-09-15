@@ -5,6 +5,10 @@ import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 
+import dao.queries.TwitterWordQuery;
+import dao.results.SystemDiag;
+import dao.results.TwitterWordData;
+
 public class TwitterDataDaoImpl implements TwitterDataDao {
 	
 	public List<TwitterWordData> GetOccurances(TwitterWordQuery word) {
@@ -32,25 +36,6 @@ public class TwitterDataDaoImpl implements TwitterDataDao {
 		try {
 			session = ConnectionFactory.GetFactory().openSession();
 			results = session.selectList("TwitterTimeMapper.GetSystemDiagnostics");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally {
-			if(session != null) {
-				session.close();
-			}
-		}
-		return results;
-	}
-	
-	public List<TwitterTime> GetTimeRange()
-	{
-		SqlSession session = null;
-		List results = null;
-		try {
-			session = ConnectionFactory.GetFactory().openSession();
-			results = session.selectList("TwitterTimeMapper.GetTimeRange");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

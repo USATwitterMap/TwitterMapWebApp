@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import controller.StateLocations;
+import dao.queries.TwitterWordQuery;
+import dao.results.SystemDiag;
+import dao.results.TwitterWordData;
 
 public class TwitterDataDaoMock implements TwitterDataDao {
 
@@ -21,11 +24,4 @@ public class TwitterDataDaoMock implements TwitterDataDao {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public List<TwitterTime> GetTimeRange() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

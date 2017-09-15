@@ -1,25 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace = "TwitterTimeMapper">
-   
-   <resultMap id = "timeResult" type = "dao.TwitterTime">
-	   <result property = "id" column = "ID"/>
-	   <result property = "endTime" column = "endTime"/>
-	   <result property = "startTime" column = "startTime"/>
-	</resultMap>
 	
-	<resultMap id = "systemDiagResult" type = "dao.SystemDiag">
+	<resultMap id = "systemDiagResult" type = "dao.results.SystemDiag">
 	   <result property = "forDate" column = "forDate"/>
 	   <result property = "numPosts" column = "numPosts"/>
 	</resultMap>
 
-   <select id = "GetSystemDiagnostics" resultType = "dao.SystemDiag">
+   <select id = "GetSystemDiagnostics" resultType = "dao.results.SystemDiag">
    		SELECT DATE(t.startTime) AS forDate, GREATEST(23 - COUNT(*), 0) AS numPosts FROM 
    		Times t WHERE (SELECT COUNT(*) FROM Words w WHERE w.time=t.id) &gt; 0 AND 
    		DATE(LOCALTIMESTAMP) != DATE(t.startTime) GROUP BY DATE(t.startTime) ORDER BY forDate;
-   </select>
-   
-   <select id = "GetTimeRange" resultType="dao.TwitterTime">
-   		SELECT * FROM Times where startTime = (SELECT MIN(startTime) FROM Times) OR startTime = (SELECT MAX(startTime) FROM Times);
    </select>
 </mapper>

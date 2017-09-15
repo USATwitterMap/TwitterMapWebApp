@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import controller.StateLocations;
+import dao.results.StatePopulation;
 
 public class StatePopulationDaoMock implements StatePopulationDao{
 

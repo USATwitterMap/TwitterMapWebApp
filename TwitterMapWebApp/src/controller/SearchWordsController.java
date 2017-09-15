@@ -18,11 +18,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import dao.*;
+import dao.queries.StartStopDateQuery;
+import dao.queries.TwitterWordQuery;
+import dao.results.StatePopulation;
+import dao.results.SystemDiag;
+import dao.results.TwitterWordData;
 import view.SingleWordView;
 import view.SystemHealthView;
 import view.TwitterSearchQuery;
 import view.LocationView;
 import view.MultiWordView;
+import view.PopularTermsSearch;
+import view.PopularTermsView;
 import view.SearchScreenView;
 
 @Controller
@@ -33,6 +40,9 @@ public class SearchWordsController {
 	
 	@Autowired
 	private StatePopulationDao popDao;
+	
+	@Autowired
+	private PopularTermsDao popularTermsDao;
 	
 	@RequestMapping(value = "searchSingle", method = RequestMethod.POST)
 	@ResponseBody
@@ -166,6 +176,21 @@ public class SearchWordsController {
 			systemHealth.getSystemHealth()[diagnosticIndex] = systemDiagnosticData.get(diagnosticIndex);
 		}
 		return systemHealth;
+	}
+	
+	@RequestMapping(value = "searchPopularTerms", method = RequestMethod.POST)
+	@ResponseBody
+	public PopularTermsView searchPopularTerms(@RequestBody PopularTermsSearch query)
+	{	
+		//prepare return structure
+		StartStopDateQuery search = new StartStopDateQuery();
+		search.setStartDate(query.getSearchTime().substring(0, query.getSearchTime().indexOf(" -")));
+		search.setStopDate(query.getSearchTime().substring(query.getSearchTime().indexOf("- ") + 2));
+		
+		List<String> results = popularTermsDao.GetPopularTerms(search);
+		PopularTermsView view = new PopularTermsView();
+		view.setResults(results);
+		return view;
 	}
 	
 	@RequestMapping(value = "twitterTimeWindow", method = RequestMethod.GET)
