@@ -3,7 +3,7 @@
 <mapper namespace = "TwitterPopularTermsMapper">
    	
    <select id = "GetPopularTerms" resultType = "String">
-   	select p.word, p.occurances from PopularTerms p join Times startTimes on startTimes.id = p.startTime join Times endTimes on endTimes.id = p.endTime 
-   	where endTimes.endTime &gt;= #{startDate} and startTimes.startTime &lt;= #{stopDate} and p.word NOT LIKE '%?%' order by occurances desc limit 10;
+   	select p.word as popularWord, max(occurances) as maxOccurances from PopularTerms p join Times startTimes on startTimes.id = p.startTime join Times endTimes on endTimes.id = p.endTime 
+   	where endTimes.endTime &gt;= #{startDate} and startTimes.startTime &lt;= #{stopDate} and p.word NOT LIKE '%?%' and p.endTime > 657 group by popularWord order by maxOccurances desc limit 10;
    </select>
 </mapper>
