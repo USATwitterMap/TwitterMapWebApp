@@ -52,6 +52,9 @@
          display: inline-block;
          width:auto;
          }
+         .container-vert-fluid {
+         overflow-y:scroll;white-space: nowrap;
+         }
          .container-fluid {
          overflow-x:scroll;white-space: nowrap;
          }
@@ -637,9 +640,9 @@
             </div>
          </div>
       </div>
-      <div class="container first col-sm-4" style="width: 500px">
+      <div class="container first col-sm-4" style="width: 500px;">
          <!-- Root accordian -->
-         <div class="panel-group first" id="accordionControls">
+         <div class="panel-group first container-vert-fluid" id="accordionControls" style="max-height: 90%">
             <div class="panel panel-default first">
                <div class="panel-heading first">
                   <h4 class="panel-title first" style="text-align: center">
@@ -692,11 +695,11 @@
                                  </h4>
                               </div>
                               <div class="panel-body first">
-                                 <div id="startEndTime" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                                 <button id="findPopular" type="button" class="btn btn-default btn-space">View Popular Terms</button>
+                                 <div id="startEndTime" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%;">
                                     <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
                                     <span></span> <b class="caret"></b>
                                  </div>
-                                 <button id="findPopular" type="button" class="btn btn-default btn-space">View Popular Terms</button>
                               </div>
                            </div>
                         </div>

@@ -9,7 +9,7 @@
 
    <select id = "GetSystemDiagnostics" resultType = "dao.results.SystemDiag">
    		SELECT DATE(t.startTime) AS forDate, GREATEST(23 - COUNT(*), 0) AS numPosts FROM 
-   		Times t WHERE (SELECT COUNT(*) FROM Words w WHERE w.time=t.id) &gt; 0 AND 
+   		Times t WHERE (SELECT COUNT(*) FROM WordsClustered w WHERE w.time=t.id) &gt; 0 AND 
    		DATE(LOCALTIMESTAMP) != DATE(t.startTime) GROUP BY DATE(t.startTime) ORDER BY forDate;
    </select>
 </mapper>

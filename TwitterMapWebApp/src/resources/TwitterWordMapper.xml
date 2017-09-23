@@ -10,7 +10,7 @@
 
    <select id = "GetWordsDuringTimeByState" resultMap="wordResult">
    		select w.state as state, w.word as word, sum(occurances) as sumOccurances 
-   		from Words w join Times t on w.time=t.id where w.word in 
+   		from WordsClustered w join Times t on w.time=t.id where w.word in 
 		<foreach item="item" index="index" collection="words"
 		        open="(" separator="," close=")">
 		          #{item}
