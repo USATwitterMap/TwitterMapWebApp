@@ -2,13 +2,13 @@ package view;
 
 public class LineGraphView 
 {
-	private String[][] lineData;
+	private Object[][] lineData;
 
-	public String[][] getLineData() {
+	public Object[][] getLineData() {
 		return lineData;
 	}
 
-	public void setLineData(String[][] lineData) {
+	public void setLineData(Object[][] lineData) {
 		this.lineData = lineData;
 	}
 }

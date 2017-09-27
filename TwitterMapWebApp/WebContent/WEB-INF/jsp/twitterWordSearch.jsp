@@ -141,7 +141,7 @@
           			  } 
          			]
          };
-         
+          lineGraphChart = new google.visualization.LineChart(document.getElementById('lineGraph'));
           geochart = new google.visualization.GeoChart(document.getElementById('geochart-colors'));
           geochart.draw(data, {region: "US", resolution: "provinces"});
           earthchart = new google.maps.Map(document.getElementById('earthchart-colors'), mapOptions);
@@ -151,6 +151,7 @@
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
       <script>
          var geochart;
+         var lineGraphChart;
          var calendarChart;
          var earthchart;
          var projection;
@@ -264,7 +265,8 @@
          		  }
          		  else if(searchData.length >1) 
          		  {
-           		  	searchMultiple(query);
+           		  	//searchMultiple(query);
+         			 createLineGraph(query);
            		  }
          		 $('.collapse').collapse('hide');
          		})
@@ -388,8 +390,10 @@
                      success: function (rawStateData) {
                     	 document.getElementById("earthchart-colors").style.zIndex = "2";
                     	 document.getElementById("geochart-colors").style.zIndex = "1";
+                    	 document.getElementById("lineGraph").style.zIndex = "1";
                     	 document.getElementById("earthchart-colors").style.opacity = "1.0";
-                    	 document.getElementById("geochart-colors").style.opacity = "0.0";
+                    	 document.getElementById("geochart-colors").style.opacity = "0.0";;
+                    	 document.getElementById("lineGraph").style.opacity = "0.0";
                     	 for(var i = 0; i < rawStateData.locations.length; i++)
                     	 {
                     	  var colorData = [];
@@ -435,6 +439,53 @@
                      
          });
           }
+         
+         function createLineGraph(searchData) {
+             var obj = searchData;
+             
+             for (var i = 0; i < stateMarkers.length; i++) 
+             {
+              stateMarkers[i].setMap(null);
+                }
+             stateMarkers = [];
+             $.ajax({
+                      	 type: "POST",
+                       contentType: "application/json",
+                       url: "searchWordByTime",
+                       data: JSON.stringify(obj),
+                       dataType: 'json',
+                       headers: { 
+                           'Accept': 'application/json',
+                           'Content-Type': 'application/json' 
+                       },
+                       timeout: 60000,
+                       success: function (rawLineGraphData) {
+                      	 document.getElementById("earthchart-colors").style.zIndex = "1";
+                      	 document.getElementById("geochart-colors").style.zIndex = "1";
+                      	 document.getElementById("lineGraph").style.zIndex = "2";
+                      	 document.getElementById("earthchart-colors").style.opacity = "0.0";
+                      	 document.getElementById("geochart-colors").style.opacity = "0.0";;
+                      	 document.getElementById("lineGraph").style.opacity = "1.0";
+                    	var data = google.visualization.arrayToDataTable(rawLineGraphData.lineData);
+           	 	  		var options = {
+           	           		title: 'Company Performance',
+           	           		curveType: 'function',
+           	           		legend: { position: 'bottom' }
+           	        	};
+
+           	 			lineGraphChart.draw(data, options);
+                       }, 
+                       fail: function () 
+                       {
+                      	var test = 1; 
+                       },
+                       always : function() 
+                       { 
+                    	var test2 = 1; 
+                       }
+                       
+           });
+            }
          
          function searchPopularTerms(searchData) {
              var obj = searchData;
@@ -487,8 +538,10 @@
                      success: function (rawStateData) {
                     	 document.getElementById("geochart-colors").style.zIndex = "2";
                     	 document.getElementById("earthchart-colors").style.zIndex = "1";
+                    	 document.getElementById("lineGraph").style.zIndex = "1";
                     	 document.getElementById("earthchart-colors").style.opacity = "0.0";
                     	 document.getElementById("geochart-colors").style.opacity = "1.0";
+                    	 document.getElementById("lineGraph").style.opacity = "0.0";
                     	 var data = google.visualization.arrayToDataTable(rawStateData.areaChart);
           	        var options = {
           	          region: 'US', 
@@ -735,5 +788,6 @@
       </div>
       <div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1; opacity:0.0;"></div>
       <div id="earthchart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:2;"></div>
+      <div id="lineGraph" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1; opacity:0.0;"></div>
    </body>
 </html>

@@ -203,7 +203,7 @@ public class SearchWordsController {
 		
 		LineGraphView view = new LineGraphView();
 		
-		view.setLineData(new String[segments + 1][search.length * populationData.size() + 1]);
+		view.setLineData(new Object[segments + 1][search.length * populationData.size() + 1]);
 		view.getLineData()[0][0] = "Time";
 		for(int stateIndex = 0; stateIndex < populationData.size(); stateIndex ++) 
 		{
@@ -218,7 +218,7 @@ public class SearchWordsController {
 			{
 				if(view.getLineData()[0][columnIndex].equals(result.getState() + ": " + result.getWord())) 
 				{
-					view.getLineData()[result.getTimeSegment() + 1][columnIndex] = Integer.toString(result.getOccurances());
+					view.getLineData()[result.getTimeSegment() + 1][columnIndex] = result.getOccurances();
 					view.getLineData()[result.getTimeSegment() + 1][0] = result.getTime().toLocaleString();
 					break;
 				}
