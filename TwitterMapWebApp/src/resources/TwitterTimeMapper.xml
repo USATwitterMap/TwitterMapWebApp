@@ -12,4 +12,11 @@
    		Times t WHERE (SELECT COUNT(*) FROM WordsClustered w WHERE w.time=t.id) &gt; 0 AND 
    		DATE(LOCALTIMESTAMP) != DATE(t.startTime) GROUP BY DATE(t.startTime) ORDER BY forDate;
    </select>
+   
+   <select id = "GetTimeSegments" resultType = "dao.results.TimeSegment">
+   		select TRUNCATE(TIMESTAMPDIFF(SECOND, #{startDate}, t.startTime) / (TIMESTAMPDIFF(SECOND, #{startDate}, #{stopDate}) / #{segments}), 0) as timeSegment, 
+   		FROM_UNIXTIME(AVG(UNIX_TIMESTAMP(t.startTime))) as time from Times t where 
+   		t.startTime &gt; #{startDate} and t.endTime &lt; #{stopDate} group by timeSegment;
+   </select>
+
 </mapper>

@@ -20,12 +20,15 @@ import org.springframework.web.servlet.ModelAndView;
 import dao.*;
 import dao.queries.StartStopDateQuery;
 import dao.queries.TwitterWordQuery;
+import dao.queries.TwitterWordTimeQuery;
 import dao.results.StatePopulation;
 import dao.results.SystemDiag;
 import dao.results.TwitterWordData;
+import dao.results.TwitterWordTimeData;
 import view.SingleWordView;
 import view.SystemHealthView;
 import view.TwitterSearchQuery;
+import view.LineGraphView;
 import view.LocationView;
 import view.MultiWordView;
 import view.PopularTermsSearch;
@@ -176,6 +179,52 @@ public class SearchWordsController {
 			systemHealth.getSystemHealth()[diagnosticIndex] = systemDiagnosticData.get(diagnosticIndex);
 		}
 		return systemHealth;
+	}
+	
+	@RequestMapping(value = "searchWordByTime", method = RequestMethod.POST)
+	@ResponseBody
+	public LineGraphView searchWordByTime(@RequestBody TwitterSearchQuery query)
+	{
+		int segments = 50;
+		List<StatePopulation> populationData = popDao.GetPopulation();
+		
+		//prepare return structure
+		TwitterWordTimeQuery wordQuery = new TwitterWordTimeQuery();
+		String[][] search = query.getSearchData();
+		wordQuery.setSegments(segments);
+		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
+		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
+		wordQuery.setWords(new ArrayList<String>());
+		for(int index = 0; index < search.length; index++)
+		{
+			wordQuery.getWords().add(search[index][0]);
+		}
+		List<TwitterWordTimeData> results = wordsDao.GetOccurancesByTime(wordQuery);
+		
+		LineGraphView view = new LineGraphView();
+		
+		view.setLineData(new String[segments + 1][search.length * populationData.size() + 1]);
+		view.getLineData()[0][0] = "Time";
+		for(int stateIndex = 0; stateIndex < populationData.size(); stateIndex ++) 
+		{
+			for(int wordIndex = 1; wordIndex <= wordQuery.getWords().size(); wordIndex ++) 
+			{
+				view.getLineData()[0][stateIndex * wordQuery.getWords().size() + wordIndex] = populationData.get(stateIndex).getState() + ": " + wordQuery.getWords().get(wordIndex - 1);
+			}
+		}
+		for(TwitterWordTimeData result : results) 
+		{
+			for(int columnIndex = 1; columnIndex < view.getLineData()[0].length; columnIndex++)
+			{
+				if(view.getLineData()[0][columnIndex].equals(result.getState() + ": " + result.getWord())) 
+				{
+					view.getLineData()[result.getTimeSegment() + 1][columnIndex] = Integer.toString(result.getOccurances());
+					view.getLineData()[result.getTimeSegment() + 1][0] = result.getTime().toLocaleString();
+					break;
+				}
+			}
+		}
+		return view;
 	}
 	
 	@RequestMapping(value = "searchPopularTerms", method = RequestMethod.POST)

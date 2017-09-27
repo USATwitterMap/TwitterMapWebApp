@@ -36,4 +36,8 @@
         <servlet-name>springapp</servlet-name>
         <url-pattern>/searchPopularTerms/*</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>springapp</servlet-name>
+        <url-pattern>/searchWordByTime/*</url-pattern>
+    </servlet-mapping>
 </web-app>
