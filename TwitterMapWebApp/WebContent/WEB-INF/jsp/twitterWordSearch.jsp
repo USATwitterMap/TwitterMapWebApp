@@ -34,6 +34,9 @@
          .first {
          z-index: 3;
          }
+         .middle {
+         z-index: 3;
+         }
          .second {
          z-index: 1;
          }
@@ -51,6 +54,14 @@
          .systemHealth{
          display: inline-block;
          width:auto;
+         }
+         .lineControls{
+         position: absolute;
+         bottom: 0px;
+         margin-right: auto;
+         margin-left: auto;
+         left: 0px;
+         right: 0px;
          }
          .container-vert-fluid {
          overflow-y:scroll;white-space: nowrap;
@@ -71,21 +82,21 @@
          margin-top: 10px;
          }
          .nav-tabs.centered > li, .nav-pills.centered > li {
-		    float:none;
-		    display:inline-block;
-		    *display:inline; /* ie7 fix */
-		     zoom:1; /* hasLayout ie7 trigger */
-		}
-		.nav-tabs.centered, .nav-pills.centered {
-		    text-align:center;
-		}
-		.tab-content > .tab-pane:not(.active),
-		.pill-content > .pill-pane:not(.active) {
-		    display: block;
-		    position: absolute;
-		    height: 100%;
-		    width: 100%;
-		} 
+         float:none;
+         display:inline-block;
+         *display:inline; /* ie7 fix */
+         zoom:1; /* hasLayout ie7 trigger */
+         }
+         .nav-tabs.centered, .nav-pills.centered {
+         text-align:center;
+         }
+         .tab-content > .tab-pane:not(.active),
+         .pill-content > .pill-pane:not(.active) {
+         display: block;
+         position: absolute;
+         height: 100%;
+         width: 100%;
+         } 
       </style>
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
       <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -171,6 +182,7 @@
          var calendarChart;
          var earthchart;
          var projection;
+         var lineGraphData;
          var stateMarkers = [];
          var curRow = 1;	      
            $(document).on("click", "#add_word", function(){
@@ -233,7 +245,6 @@
          	$(document).ajaxComplete(function(event, request, settings) {
          	    $('#loading-indicator').hide();
          	});
-         	  
          	  var rowcontent = ""
          	  for (rowNum = 1; rowNum <= maxColorColumnsAndRows; rowNum++) { 
          		$('#color_table').append('<tr id="colorRow'+rowNum+'"></tr>');
@@ -247,6 +258,18 @@
          	      y2.innerHTML = rowcontent;
             }
          	  
+         	 $('#selState1').on('change', function(){
+         		updateLineGraph();
+         	  });
+         	$('#selState2').on('change', function(){
+         		updateLineGraph();
+         	  });
+         	$('#selWord1').on('change', function(){
+         		updateLineGraph();
+         	  });
+         	$('#selWord2').on('change', function(){
+         		updateLineGraph();
+         	  });
          	  $('#colorPicker').on('shown.bs.modal', function(e) { 
              	  colorInvoker = e.relatedTarget;
              	});
@@ -264,12 +287,17 @@
          		  var table = $('#word_table')[0];
          		  var rows = table.rows;
          		  var time = $('#startEndTime span')[0].innerText;
+         		  $('#selWord1').empty();
+         		  $('#selWord2').empty();
          		  for (var i = 1; i < rows.length-1; i++) {
          			  var wordDetails = [];
          			  wordDetails.push(rows[i].children[0].textContent);
          			  var temp = rows[i].children[1].innerHTML;
          			  temp =  temp.substring(temp.indexOf("background-color: ") + "background-color: ".length);
-         			  wordDetails.push(temp.substring(0, temp.indexOf(";")));
+         			  temp = temp.substring(0, temp.indexOf(";"));
+                      $('#selWord1').append('<option value=' + temp + '>'+ rows[i].children[0].textContent +'</option>');
+                      $('#selWord2').append('<option value=' + temp + '>'+ rows[i].children[0].textContent +'</option>');
+         			  wordDetails.push(temp);
          			  wordDetails.push(time);
          			  searchData.push(wordDetails);
          		  }
@@ -283,7 +311,7 @@
          		  {
            		  	//warning
            		  }
-         		 $('.collapse').collapse('hide');
+         		 $('.collapseTarget').collapse('hide');
          		})
          	});
            
@@ -334,7 +362,7 @@
          
            function addWord(word) 
            {
-        	   nextRow=curRow + 1;
+            nextRow=curRow + 1;
                var color = rainbow(maxColorColumnsAndRows * maxColorColumnsAndRows, getRandomInt(0, maxColorColumnsAndRows * maxColorColumnsAndRows));
                $('#word_table > tbody:last-child').append('<tr id="wordRow'+(nextRow)+'"></tr>');
                var y = document.getElementById("wordRow"+curRow);
@@ -405,39 +433,39 @@
                      success: function (searchResultView) {
                     	 if(searchResultView.multiWordView != null) 
                     	 {
-	                    	 for(var i = 0; i < searchResultView.multiWordView.locations.length; i++)
-	                    	 {
-		                    	  var colorData = [];
-		                   		  var latLng = new google.maps.LatLng( searchResultView.multiWordView.locations[i].latitude, searchResultView.multiWordView.locations[i].longitude );
-		                   		  var stateDataArray = [];
-		                   		  stateDataArray.push([]);
-		                 				  stateDataArray[0].push('Word');
-		                 				  stateDataArray[0].push('Occurances');
-		                   		  for(var j = 0; j < searchResultView.multiWordView.locations[i].wordData.length; j++) 
-		                   		  {
-		                   			stateDataArray.push([]);
-		                   			stateDataArray[j + 1].push(searchResultView.multiWordView.locations[i].wordData[j][0]);
-		                   			colorData.push(searchResultView.multiWordView.locations[i].wordData[j][1]);
-		                   			stateDataArray[j + 1].push(searchResultView.multiWordView.locations[i].wordData[j][2]);
-		                   		  }
-		                  		 	  var data = google.visualization.arrayToDataTable(stateDataArray);
-		         	 	      var options = {
-		         	 	          fontSize: 8,
-		         	 	          backgroundColor: 'transparent',
-		         	 	          legend: 'none',
-		         	 	          colors: colorData,
-		         	 	          //chartArea:{left:0,top:0,width:60,height:60}
-		         	 	      };
-		                   		  var marker = new ChartMarker({
-		               	 	          map: earthchart,
-		               	 	          position: latLng,
-		               	 	          width: '120px',
-		               	 	          height: '120px',
-		               	 	          chartData: data,
-		               	 	          chartOptions: options,
-		               	 	      });
-		                   		  stateMarkers.push(marker);
-		                   	  }
+                     	 for(var i = 0; i < searchResultView.multiWordView.locations.length; i++)
+                     	 {
+                      	  var colorData = [];
+                     		  var latLng = new google.maps.LatLng( searchResultView.multiWordView.locations[i].latitude, searchResultView.multiWordView.locations[i].longitude );
+                     		  var stateDataArray = [];
+                     		  stateDataArray.push([]);
+                   				  stateDataArray[0].push('Word');
+                   				  stateDataArray[0].push('Occurances');
+                     		  for(var j = 0; j < searchResultView.multiWordView.locations[i].wordData.length; j++) 
+                     		  {
+                     			stateDataArray.push([]);
+                     			stateDataArray[j + 1].push(searchResultView.multiWordView.locations[i].wordData[j][0]);
+                     			colorData.push(searchResultView.multiWordView.locations[i].wordData[j][1]);
+                     			stateDataArray[j + 1].push(searchResultView.multiWordView.locations[i].wordData[j][2]);
+                     		  }
+                    		 	  var data = google.visualization.arrayToDataTable(stateDataArray);
+           	 	      var options = {
+           	 	          fontSize: 8,
+           	 	          backgroundColor: 'transparent',
+           	 	          legend: 'none',
+           	 	          colors: colorData,
+           	 	          //chartArea:{left:0,top:0,width:60,height:60}
+           	 	      };
+                     		  var marker = new ChartMarker({
+                 	 	          map: earthchart,
+                 	 	          position: latLng,
+                 	 	          width: '120px',
+                 	 	          height: '120px',
+                 	 	          chartData: data,
+                 	 	          chartOptions: options,
+                 	 	      });
+                     		  stateMarkers.push(marker);
+                     	  }
                     	 }
                     	 if(searchResultView.singleWordView != null) 
                     	 {
@@ -453,14 +481,13 @@
                     	 }
                     	 if(searchResultView.lineGraphView != null) 
                    		 {
-                    		 var data = google.visualization.arrayToDataTable(searchResultView.lineGraphView.lineData);
+                    		lineGraphData = google.visualization.arrayToDataTable(searchResultView.lineGraphView.lineData);
                	 	  		var options = {
                	           		title: 'Company Performance',
                	           		curveType: 'function',
                	           		legend: { position: 'bottom' }
                	        	};
-
-               	 			lineGraphChart.draw(data, options);
+               	 	  		updateLineGraph();
                    		 }
                      }, 
                      fail: function () 
@@ -473,6 +500,33 @@
          });
           }
          
+         function updateLineGraph() 
+         {
+        	 var lineGraphView = new google.visualization.DataView(lineGraphData);
+        	 var numOfColumns = lineGraphView.getNumberOfColumns();
+	 	  		var disabledColumns = [];
+	 	  		var enabledColumn1 = $('#selState1').find('option:selected').attr('value') + ": " + $('#selWord1').find('option:selected').text();
+	 	  		var column1Color =  $('#selWord1').find('option:selected').attr('value');
+	 	  		var enabledColumn2 = $('#selState2').find('option:selected').attr('value') + ": " + $('#selWord2').find('option:selected').text();
+	 	  		var column2Color =  $('#selWord2').find('option:selected').attr('value');
+	 	  		for(var j = 0; j < numOfColumns; j++) 
+    		  	{
+	 	  			var columnLabel = lineGraphView.getColumnLabel(j);
+    	 	  		if(columnLabel != "Time" && columnLabel != enabledColumn1 && columnLabel != enabledColumn2) {
+    	 	  			disabledColumns.push(j);
+    	 	  		}
+    		  	}
+	 	  		var options = {
+	           		title: 'Keywords Over Time',
+	           		curveType: 'function',
+	           		legend: { position: 'top' },
+	           		lineWidth: 4,
+	 	  			colors: [column1Color,column2Color],
+	 	  		 	series: { 1: { lineDashStyle: [10, 2]  }, }
+	 	  		};
+	 	  		lineGraphView.hideColumns(disabledColumns); 
+	      		lineGraphChart.draw(lineGraphView, options);
+         }
          
          function searchPopularTerms(searchData) {
              var obj = searchData;
@@ -494,7 +548,7 @@
                    	     	var y = document.getElementById("popularRow"+i);
                         	y.innerHTML = "<td>" + popularData.results[i] + "</td><td><button type='button' id='add_pop_word' onclick=\"addWord('"+popularData.results[i]+"')\"' class='btn btn-success btn-circleadd btn-lg glyphicon glyphicon-plus'></button></td>";
                    		  }
-
+         
                        },
                        fail: function () 
                        {
@@ -620,16 +674,16 @@
                   <h4 class="modal-title">Popular Terms For Selected Dates</h4>
                </div>
                <div class="modal-body">
-                     <table class="table" id="popular_terms_table" style="border-collapse:collapse;border-spacing:0;margin:0;padding:0;border:0;width:auto;width:100%;">
-                        <thead>
-                           <tr>
+                  <table class="table" id="popular_terms_table" style="border-collapse:collapse;border-spacing:0;margin:0;padding:0;border:0;width:auto;width:100%;">
+                     <thead>
+                        <tr>
                            <th>Word</th>
                            <th></th>
-                           </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                     </table>
+                        </tr>
+                     </thead>
+                     <tbody>
+                     </tbody>
+                  </table>
                </div>
                <div class="modal-footer">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -637,7 +691,7 @@
             </div>
          </div>
       </div>
-      <div class="container first col-sm-4" style="width: 500px;">
+      <div class="container first col-sm-4" style="width: 500px; ">
          <!-- Root accordian -->
          <div class="panel-group first container-vert-fluid" id="accordionControls" style="max-height: 90%">
             <div class="panel panel-default first">
@@ -732,22 +786,161 @@
       </div>
       <div class="second" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;">
       <ul class="nav nav-tabs centered">
-		  <li class="active"><a data-toggle="tab" href="#home">Keyword Ratio Per State</a></li>
-		  <li><a data-toggle="tab" href="#menu1">Keyword Occurances By State</a></li>
-		  <li><a data-toggle="tab" href="#menu2">Keyword Occurances Over Time</a></li>
-		</ul>
-		
-		<div class="tab-content">
-		  <div id="home" class="tab-pane fade in active">
-		   <div id="earthchart-colors" style="height:100%; width:100%;"></div>
-		  </div>
-		  <div id="menu1" class="tab-pane fade">
-		    <div id="geochart-colors" style="height:100%; width:100%;"></div>
-		  </div>
-		  <div id="menu2" class="tab-pane fade">
-		    <div id="lineGraph" style="height:100%; width:100%;"></div>
-		  </div>
-		</div>
-		</div>
+         <li class="active"><a data-toggle="tab" href="#home">Keyword Ratio Per State</a></li>
+         <li><a data-toggle="tab" href="#menu1">Keyword Occurances By State</a></li>
+         <li><a data-toggle="tab" href="#menu2">Keyword Occurances Over Time</a></li>
+      </ul>
+      <div class="tab-content" >
+         <div id="home" class="tab-pane fade in active">
+            <div id="earthchart-colors" style="height:100%; width:100%;"></div>
+         </div>
+         <div id="menu1" class="tab-pane fade">
+            <div id="geochart-colors" style="height:100%; width:100%;"></div>
+         </div>
+         <div id="menu2" class="tab-pane fade">
+            <div id="lineGraph" style="height:100%; width:100%;"></div>
+            <div class="container first lineControls">
+               <!-- Root accordian -->
+               <div class="panel-group first" id="accordionLineControls">
+                  <div class="panel panel-default first">
+                     <div class="panel-heading first">
+                        <h4 class="panel-title first" style="text-align: center;">
+                           <a class="panel-toggle first" data-toggle="collapse" data-parent="accordionLineControls" href=".collapseLineControls">
+                           	Line Graph Control
+                           </a>
+                        </h4>
+                     </div>
+                     <div class="collapseLineControls panel-body collapse in first">
+                        <div class="panel-group">
+                           <div class="panel panel-default">
+                              <div class="panel-heading">First Line Series (Dotted line)</div>
+                              <div class="panel-body">
+                                 <label for="selWord1" class="col-sm-2">Select Word:</label>
+                                 <select class="form-control col-sm-4" id="selWord1" style="width:80%">
+                                 </select>
+                                 <label for="selState1" class="col-sm-2">Select State:</label>
+                                 <select class="form-control col-sm-4" id="selState1" style="width:80%">
+                                    																		<option value="AL">Alabama</option>                                
+                                    <option value="AK">Alaska</option>       
+                                    <option value="AZ">Arizona</option>      
+                                    <option value="AR">Arkansas</option>     
+                                    <option value="CA">California</option>   
+                                    <option value="CO">Colorado</option>     
+                                    <option value="CT">Connecticut</option>  
+                                    <option value="DE">Delaware</option>     
+                                    <option value="FL">Florida</option>      
+                                    <option value="GA">Georgia</option>      
+                                    <option value="HI">Hawaii</option>       
+                                    <option value="ID">Idaho</option>        
+                                    <option value="IL">Illinois</option>     
+                                    <option value="IN">Indiana</option>      
+                                    <option value="IA">Iowa</option>         
+                                    <option value="KS">Kansas</option>       
+                                    <option value="KY">Kentucky</option>     
+                                    <option value="LA">Louisiana</option>    
+                                    <option value="ME">Maine</option>        
+                                    <option value="MD">Maryland</option>     
+                                    <option value="MA">Massachusetts</option>
+                                    <option value="MI">Michigan</option>     
+                                    <option value="MN">Minnesota</option>    
+                                    <option value="MS">Mississippi</option>  
+                                    <option value="MO">Missouri</option>     
+                                    <option value="MT">Montana</option>      
+                                    <option value="NE">Nebraska</option>     
+                                    <option value="NV">Nevada</option>       
+                                    <option value="NH">NewHampshire</option> 
+                                    <option value="NJ">NewJersey</option>    
+                                    <option value="NM">NewMexico</option>    
+                                    <option value="NY">NewYork</option>      
+                                    <option value="NC">NorthCarolina</option>
+                                    <option value="ND">NorthDakota</option>  
+                                    <option value="OH">Ohio</option>         
+                                    <option value="OK">Oklahoma</option>     
+                                    <option value="OR">Oregon</option>       
+                                    <option value="PA">Pennsylvania</option> 
+                                    <option value="RI">RhodeIsland</option>  
+                                    <option value="SC">SouthCarolina</option>
+                                    <option value="SD">SouthDakota</option>  
+                                    <option value="TN">Tennessee</option>    
+                                    <option value="TX">Texas</option>        
+                                    <option value="UT">Utah</option>         
+                                    <option value="VT">Vermont</option>      
+                                    <option value="VA">Virginia</option>     
+                                    <option value="WA">Washington</option>   
+                                    <option value="WV">WestVirginia</option> 
+                                    <option value="WI">Wisconsin</option>    
+                                    <option value="WY">Wyoming</option>      
+                                 </select>
+                              </div>
+                              <div class="panel panel-default">
+                                 <div class="panel-heading">Second Line Series (Solid line)</div>
+                                 <div class="panel-body">
+                                    <label for="selWord2"  class="col-sm-2">Select Word:</label>
+                                    <select class="form-control col-sm-4" id="selWord2" style="width:80%">
+                                    </select>
+                                    <label for="selState2" class="col-sm-2">Select State:</label>
+                                    <select class="form-control col-sm-4" id="selState2" style="width:80%">
+                                    <option value="AL">Alabama</option>                                
+                                    <option value="AK">Alaska</option>       
+                                    <option value="AZ">Arizona</option>      
+                                    <option value="AR">Arkansas</option>     
+                                    <option value="CA">California</option>   
+                                    <option value="CO">Colorado</option>     
+                                    <option value="CT">Connecticut</option>  
+                                    <option value="DE">Delaware</option>     
+                                    <option value="FL">Florida</option>      
+                                    <option value="GA">Georgia</option>      
+                                    <option value="HI">Hawaii</option>       
+                                    <option value="ID">Idaho</option>        
+                                    <option value="IL">Illinois</option>     
+                                    <option value="IN">Indiana</option>      
+                                    <option value="IA">Iowa</option>         
+                                    <option value="KS">Kansas</option>       
+                                    <option value="KY">Kentucky</option>     
+                                    <option value="LA">Louisiana</option>    
+                                    <option value="ME">Maine</option>        
+                                    <option value="MD">Maryland</option>     
+                                    <option value="MA">Massachusetts</option>
+                                    <option value="MI">Michigan</option>     
+                                    <option value="MN">Minnesota</option>    
+                                    <option value="MS">Mississippi</option>  
+                                    <option value="MO">Missouri</option>     
+                                    <option value="MT">Montana</option>      
+                                    <option value="NE">Nebraska</option>     
+                                    <option value="NV">Nevada</option>       
+                                    <option value="NH">NewHampshire</option> 
+                                    <option value="NJ">NewJersey</option>    
+                                    <option value="NM">NewMexico</option>    
+                                    <option value="NY">NewYork</option>      
+                                    <option value="NC">NorthCarolina</option>
+                                    <option value="ND">NorthDakota</option>  
+                                    <option value="OH">Ohio</option>         
+                                    <option value="OK">Oklahoma</option>     
+                                    <option value="OR">Oregon</option>       
+                                    <option value="PA">Pennsylvania</option> 
+                                    <option value="RI">RhodeIsland</option>  
+                                    <option value="SC">SouthCarolina</option>
+                                    <option value="SD">SouthDakota</option>  
+                                    <option value="TN">Tennessee</option>    
+                                    <option value="TX">Texas</option>        
+                                    <option value="UT">Utah</option>         
+                                    <option value="VT">Vermont</option>      
+                                    <option value="VA">Virginia</option>     
+                                    <option value="WA">Washington</option>   
+                                    <option value="WV">WestVirginia</option> 
+                                    <option value="WI">Wisconsin</option>    
+                                    <option value="WY">Wyoming</option>      
+                                    </select>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
    </body>
 </html>
