@@ -70,6 +70,22 @@
          .btn-space {
          margin-top: 10px;
          }
+         .nav-tabs.centered > li, .nav-pills.centered > li {
+		    float:none;
+		    display:inline-block;
+		    *display:inline; /* ie7 fix */
+		     zoom:1; /* hasLayout ie7 trigger */
+		}
+		.nav-tabs.centered, .nav-pills.centered {
+		    text-align:center;
+		}
+		.tab-content > .tab-pane:not(.active),
+		.pill-content > .pill-pane:not(.active) {
+		    display: block;
+		    position: absolute;
+		    height: 100%;
+		    width: 100%;
+		} 
       </style>
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
       <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -201,7 +217,6 @@
          	      })
          
          	      this.$inner
-         	          .html( '<img src="' + this.get('image') + '"/>' )
          	          .click( function( event ) {
          	              var events = marker.get('events');
          	              events && events.click( event );
@@ -259,14 +274,14 @@
          			  searchData.push(wordDetails);
          		  }
          		 var query = { "searchData": searchData, "populationControl": $("#PopControl").is(':checked') };
-         		  if(searchData.length == 1) 
+         		search(query);
+         		  if(searchData.length < 0) 
          		  {
-         		  	searchSingle(query);
+         			 search(query);
          		  }
-         		  else if(searchData.length >1) 
+         		  else
          		  {
-           		  	//searchMultiple(query);
-         			 createLineGraph(query);
+           		  	//warning
            		  }
          		 $('.collapse').collapse('hide');
          		})
@@ -368,7 +383,7 @@
            var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
            return (c);
          }
-         function searchMultiple(searchData) {
+         function search(searchData) {
            var obj = searchData;
            
            for (var i = 0; i < stateMarkers.length; i++) 
@@ -379,7 +394,7 @@
            $.ajax({
                     	 type: "POST",
                      contentType: "application/json",
-                     url: "searchMultiple",
+                     url: "search",
                      data: JSON.stringify(obj),
                      dataType: 'json',
                      headers: { 
@@ -387,105 +402,77 @@
                          'Content-Type': 'application/json' 
                      },
                      timeout: 60000,
-                     success: function (rawStateData) {
-                    	 document.getElementById("earthchart-colors").style.zIndex = "2";
-                    	 document.getElementById("geochart-colors").style.zIndex = "1";
-                    	 document.getElementById("lineGraph").style.zIndex = "1";
-                    	 document.getElementById("earthchart-colors").style.opacity = "1.0";
-                    	 document.getElementById("geochart-colors").style.opacity = "0.0";;
-                    	 document.getElementById("lineGraph").style.opacity = "0.0";
-                    	 for(var i = 0; i < rawStateData.locations.length; i++)
+                     success: function (searchResultView) {
+                    	 if(searchResultView.multiWordView != null) 
                     	 {
-                    	  var colorData = [];
-                   		  var latLng = new google.maps.LatLng( rawStateData.locations[i].latitude, rawStateData.locations[i].longitude );
-                   		  var stateDataArray = [];
-                   		  stateDataArray.push([]);
-                 				  stateDataArray[0].push('Word');
-                 				  stateDataArray[0].push('Occurances');
-                   		  for(var j = 0; j < rawStateData.locations[i].wordData.length; j++) 
-                   		  {
-                   			stateDataArray.push([]);
-                   			stateDataArray[j + 1].push(rawStateData.locations[i].wordData[j][0]);
-                   			colorData.push(rawStateData.locations[i].wordData[j][1]);
-                   			stateDataArray[j + 1].push(rawStateData.locations[i].wordData[j][2]);
-                   		  }
-                  		 	  var data = google.visualization.arrayToDataTable(stateDataArray);
-         	 	      var options = {
-         	 	          fontSize: 8,
-         	 	          backgroundColor: 'transparent',
-         	 	          legend: 'none',
-         	 	          colors: colorData,
-         	 	          //chartArea:{left:0,top:0,width:60,height:60}
-         	 	      };
-                   		  var marker = new ChartMarker({
-               	 	          map: earthchart,
-               	 	          position: latLng,
-               	 	          width: '120px',
-               	 	          height: '120px',
-               	 	          chartData: data,
-               	 	          chartOptions: options,
-               	 	      });
-                   		  stateMarkers.push(marker);
-                   	  }
+	                    	 for(var i = 0; i < searchResultView.multiWordView.locations.length; i++)
+	                    	 {
+		                    	  var colorData = [];
+		                   		  var latLng = new google.maps.LatLng( searchResultView.multiWordView.locations[i].latitude, searchResultView.multiWordView.locations[i].longitude );
+		                   		  var stateDataArray = [];
+		                   		  stateDataArray.push([]);
+		                 				  stateDataArray[0].push('Word');
+		                 				  stateDataArray[0].push('Occurances');
+		                   		  for(var j = 0; j < searchResultView.multiWordView.locations[i].wordData.length; j++) 
+		                   		  {
+		                   			stateDataArray.push([]);
+		                   			stateDataArray[j + 1].push(searchResultView.multiWordView.locations[i].wordData[j][0]);
+		                   			colorData.push(searchResultView.multiWordView.locations[i].wordData[j][1]);
+		                   			stateDataArray[j + 1].push(searchResultView.multiWordView.locations[i].wordData[j][2]);
+		                   		  }
+		                  		 	  var data = google.visualization.arrayToDataTable(stateDataArray);
+		         	 	      var options = {
+		         	 	          fontSize: 8,
+		         	 	          backgroundColor: 'transparent',
+		         	 	          legend: 'none',
+		         	 	          colors: colorData,
+		         	 	          //chartArea:{left:0,top:0,width:60,height:60}
+		         	 	      };
+		                   		  var marker = new ChartMarker({
+		               	 	          map: earthchart,
+		               	 	          position: latLng,
+		               	 	          width: '120px',
+		               	 	          height: '120px',
+		               	 	          chartData: data,
+		               	 	          chartOptions: options,
+		               	 	      });
+		                   		  stateMarkers.push(marker);
+		                   	  }
+                    	 }
+                    	 if(searchResultView.singleWordView != null) 
+                    	 {
+                    		 var data = google.visualization.arrayToDataTable(searchResultView.singleWordView.areaChart);
+                   	        var options = {
+                   	          region: 'US', 
+                   	          colorAxis: {colors: ['black', data.color]},
+                   	          backgroundColor: '#81d4fa',
+                   	          datalessRegionColor: '#f8bbd0',
+                   	          defaultColor: '#f5f5f5',
+                   	        };
+                  			geochart.draw(data, {region: "US", resolution: "provinces", colors: [searchResultView.singleWordView.color]});
+                    	 }
+                    	 if(searchResultView.lineGraphView != null) 
+                   		 {
+                    		 var data = google.visualization.arrayToDataTable(searchResultView.lineGraphView.lineData);
+               	 	  		var options = {
+               	           		title: 'Company Performance',
+               	           		curveType: 'function',
+               	           		legend: { position: 'bottom' }
+               	        	};
+
+               	 			lineGraphChart.draw(data, options);
+                   		 }
                      }, 
                      fail: function () 
                      {
-                    	var test = 1; 
                      },
                      always : function() 
                      { 
-                  	var test2 = 1; 
                      }
                      
          });
           }
          
-         function createLineGraph(searchData) {
-             var obj = searchData;
-             
-             for (var i = 0; i < stateMarkers.length; i++) 
-             {
-              stateMarkers[i].setMap(null);
-                }
-             stateMarkers = [];
-             $.ajax({
-                      	 type: "POST",
-                       contentType: "application/json",
-                       url: "searchWordByTime",
-                       data: JSON.stringify(obj),
-                       dataType: 'json',
-                       headers: { 
-                           'Accept': 'application/json',
-                           'Content-Type': 'application/json' 
-                       },
-                       timeout: 60000,
-                       success: function (rawLineGraphData) {
-                      	 document.getElementById("earthchart-colors").style.zIndex = "1";
-                      	 document.getElementById("geochart-colors").style.zIndex = "1";
-                      	 document.getElementById("lineGraph").style.zIndex = "2";
-                      	 document.getElementById("earthchart-colors").style.opacity = "0.0";
-                      	 document.getElementById("geochart-colors").style.opacity = "0.0";;
-                      	 document.getElementById("lineGraph").style.opacity = "1.0";
-                    	var data = google.visualization.arrayToDataTable(rawLineGraphData.lineData);
-           	 	  		var options = {
-           	           		title: 'Company Performance',
-           	           		curveType: 'function',
-           	           		legend: { position: 'bottom' }
-           	        	};
-
-           	 			lineGraphChart.draw(data, options);
-                       }, 
-                       fail: function () 
-                       {
-                      	var test = 1; 
-                       },
-                       always : function() 
-                       { 
-                    	var test2 = 1; 
-                       }
-                       
-           });
-            }
          
          function searchPopularTerms(searchData) {
              var obj = searchData;
@@ -520,49 +507,6 @@
                        
            });
             }
-            
-         
-          function searchSingle(searchData) {
-           var obj = searchData;
-           $.ajax({
-                    	 type: "POST",
-                     contentType: "application/json",
-                     url: "searchSingle",
-                     data: JSON.stringify(obj),
-                     dataType: 'json',
-                     headers: { 
-                         'Accept': 'application/json',
-                         'Content-Type': 'application/json' 
-                     },
-                     timeout: 60000,
-                     success: function (rawStateData) {
-                    	 document.getElementById("geochart-colors").style.zIndex = "2";
-                    	 document.getElementById("earthchart-colors").style.zIndex = "1";
-                    	 document.getElementById("lineGraph").style.zIndex = "1";
-                    	 document.getElementById("earthchart-colors").style.opacity = "0.0";
-                    	 document.getElementById("geochart-colors").style.opacity = "1.0";
-                    	 document.getElementById("lineGraph").style.opacity = "0.0";
-                    	 var data = google.visualization.arrayToDataTable(rawStateData.areaChart);
-          	        var options = {
-          	          region: 'US', 
-          	          colorAxis: {colors: ['black', data.color]},
-          	          backgroundColor: '#81d4fa',
-          	          datalessRegionColor: '#f8bbd0',
-          	          defaultColor: '#f5f5f5',
-          	        };
-         			geochart.draw(data, {region: "US", resolution: "provinces", colors: [rawStateData.color]});
-                     },
-                     fail: function () 
-                     {
-                    	var test = 1; 
-                     },
-                     always : function() 
-                     { 
-                  	var test2 = 1; 
-                     }
-                     
-         });
-          }
           
           function retrieveSystemHealth() {
            $('#loading-indicator-calendar').show();
@@ -786,8 +730,24 @@
             </div>
          </div>
       </div>
-      <div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1; opacity:0.0;"></div>
-      <div id="earthchart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:2;"></div>
-      <div id="lineGraph" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;z-index:1; opacity:0.0;"></div>
+      <div class="second" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;">
+      <ul class="nav nav-tabs centered">
+		  <li class="active"><a data-toggle="tab" href="#home">Keyword Ratio Per State</a></li>
+		  <li><a data-toggle="tab" href="#menu1">Keyword Occurances By State</a></li>
+		  <li><a data-toggle="tab" href="#menu2">Keyword Occurances Over Time</a></li>
+		</ul>
+		
+		<div class="tab-content">
+		  <div id="home" class="tab-pane fade in active">
+		   <div id="earthchart-colors" style="height:100%; width:100%;"></div>
+		  </div>
+		  <div id="menu1" class="tab-pane fade">
+		    <div id="geochart-colors" style="height:100%; width:100%;"></div>
+		  </div>
+		  <div id="menu2" class="tab-pane fade">
+		    <div id="lineGraph" style="height:100%; width:100%;"></div>
+		  </div>
+		</div>
+		</div>
    </body>
 </html>

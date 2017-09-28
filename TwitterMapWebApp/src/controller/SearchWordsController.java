@@ -28,6 +28,7 @@ import dao.results.TwitterWordTimeData;
 import view.SingleWordView;
 import view.SystemHealthView;
 import view.TwitterSearchQuery;
+import view.TwitterSearchView;
 import view.LineGraphView;
 import view.LocationView;
 import view.MultiWordView;
@@ -47,28 +48,40 @@ public class SearchWordsController {
 	@Autowired
 	private PopularTermsDao popularTermsDao;
 	
-	@RequestMapping(value = "searchSingle", method = RequestMethod.POST)
+	@RequestMapping(value = "search", method = RequestMethod.POST)
 	@ResponseBody
-	public SingleWordView searchSingle(@RequestBody TwitterSearchQuery query)
+	public TwitterSearchView search(@RequestBody TwitterSearchQuery query)
 	{	
 		//prepare return structure
-		TwitterWordQuery wordQuery = new TwitterWordQuery();
+		TwitterWordTimeQuery wordQuery = new TwitterWordTimeQuery();
 		String[][] search = query.getSearchData();
-		
-		List<StatePopulation> populationData = null;
-		if(query.isPopulationControl()) 
-		{
-			populationData = popDao.GetPopulation();
-		}
-		
 		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
 		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
 		wordQuery.setWords(new ArrayList<String>());
+		wordQuery.setSegments(50);
 		for(int index = 0; index < search.length; index++)
 		{
 			wordQuery.getWords().add(search[index][0]);
 		}
+		
+		List<StatePopulation> populationData = popDao.GetPopulation();
 		List<TwitterWordData> results = wordsDao.GetOccurances(wordQuery);
+		List<TwitterWordTimeData> timeResults = wordsDao.GetOccurancesByTime(wordQuery);
+		
+		TwitterSearchView view = new TwitterSearchView();
+		if(search.length == 1) 
+		{
+			view.setSingleWordView(searchSingle(results, populationData, query));
+		}
+		view.setMultiWordView(searchMultiple(results, search));
+		view.setLineGraphView(searchWordByTime(timeResults, populationData, wordQuery));
+		return view;
+	}
+	
+	private SingleWordView searchSingle(List<TwitterWordData> results, List<StatePopulation> populationData, TwitterSearchQuery query)
+	{	
+		//prepare return structure
+		String[][] search = query.getSearchData();
 		SingleWordView view = new SingleWordView();
 		Object[][] areaMapData = new Object[results.size()+1][2];
 		areaMapData[0][0] = "State";
@@ -78,7 +91,7 @@ public class SearchWordsController {
 		{
 			areaMapData[index + 1][0] = "US-" + results.get(index).getState();
 			double occurances = results.get(index).getOccurances();
-			if(populationData != null) 
+			if(query.isPopulationControl()) 
 			{
 				for(StatePopulation population : populationData) 
 				{
@@ -104,22 +117,10 @@ public class SearchWordsController {
 		view.setAreaChart(areaMapData);
 		return view;
 	}
-	
-	@RequestMapping(value = "searchMultiple", method = RequestMethod.POST)
-	@ResponseBody
-	public MultiWordView searchMultiple(@RequestBody TwitterSearchQuery query)
+
+	private MultiWordView searchMultiple(List<TwitterWordData> results, String[][] search)
 	{
 		//prepare return structure
-		TwitterWordQuery wordQuery = new TwitterWordQuery();
-		String[][] search = query.getSearchData();
-		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
-		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
-		wordQuery.setWords(new ArrayList<String>());
-		for(int index = 0; index < search.length; index++)
-		{
-			wordQuery.getWords().add(search[index][0]);
-		}
-		List<TwitterWordData> results = wordsDao.GetOccurances(wordQuery);
 		MultiWordView view = new MultiWordView();
 		view.setLocations(new LocationView[50]);
 		int locationCounter = 0;
@@ -180,30 +181,12 @@ public class SearchWordsController {
 		}
 		return systemHealth;
 	}
-	
-	@RequestMapping(value = "searchWordByTime", method = RequestMethod.POST)
-	@ResponseBody
-	public LineGraphView searchWordByTime(@RequestBody TwitterSearchQuery query)
+
+	private LineGraphView searchWordByTime(List<TwitterWordTimeData> results, List<StatePopulation> populationData, TwitterWordTimeQuery wordQuery)
 	{
-		int segments = 50;
-		List<StatePopulation> populationData = popDao.GetPopulation();
-		
-		//prepare return structure
-		TwitterWordTimeQuery wordQuery = new TwitterWordTimeQuery();
-		String[][] search = query.getSearchData();
-		wordQuery.setSegments(segments);
-		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
-		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
-		wordQuery.setWords(new ArrayList<String>());
-		for(int index = 0; index < search.length; index++)
-		{
-			wordQuery.getWords().add(search[index][0]);
-		}
-		List<TwitterWordTimeData> results = wordsDao.GetOccurancesByTime(wordQuery);
-		
 		LineGraphView view = new LineGraphView();
 		
-		view.setLineData(new Object[segments + 1][search.length * populationData.size() + 1]);
+		view.setLineData(new Object[wordQuery.getSegments() + 1][wordQuery.getWords().size() * populationData.size() + 1]);
 		view.getLineData()[0][0] = "Time";
 		for(int stateIndex = 0; stateIndex < populationData.size(); stateIndex ++) 
 		{
