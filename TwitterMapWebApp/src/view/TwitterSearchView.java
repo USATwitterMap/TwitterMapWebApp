@@ -2,15 +2,15 @@ package view;
 
 public class TwitterSearchView 
 {
-	private SingleWordView singleWordView;
+	private SingleWordView singleWordView[];
 	private MultiWordView multiWordView;
 	private LineGraphView lineGraphView;
 
-	public SingleWordView getSingleWordView() {
+	public SingleWordView[] getSingleWordView() {
 		return singleWordView;
 	}
 
-	public void setSingleWordView(SingleWordView singleWordView) {
+	public void setSingleWordView(SingleWordView[] singleWordView) {
 		this.singleWordView = singleWordView;
 	}
 

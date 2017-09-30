@@ -58,7 +58,7 @@
          display: inline-block;
          width:auto;
          }
-         .lineControls{
+         .bottomControls{
          position: absolute;
          bottom: 0px;
          margin-right: auto;
@@ -140,6 +140,7 @@
          			draggable: false,
          			maxZoom: 8,
          			minZoom: 4,
+         			fullscreenControl: false,
          			mapTypeId: google.maps.MapTypeId.ROADMAP,
          			styles: [
          		      {
@@ -188,6 +189,7 @@
          var projection;
          var lineGraphData;
          var stateMarkers = [];
+         var geoData = [];
          var curRow = 1;	      
            $(document).on("click", "#add_word", function(){
          	  nextRow=curRow + 1;
@@ -274,6 +276,9 @@
          	$('#selWord2').on('change', function(){
          		updateLineGraph();
          	  });
+         	$('#selGeoWord').on('change', function(){
+         		updateGeoGraph($('#selGeoWord').find('option:selected').attr('value'));
+          	});
          	  $('#colorPicker').on('shown.bs.modal', function(e) { 
              	  colorInvoker = e.relatedTarget;
              	});
@@ -293,6 +298,7 @@
          		  var time = $('#startEndTime span')[0].innerText;
          		  $('#selWord1').empty();
          		  $('#selWord2').empty();
+         		 $('#selGeoWord').empty();
          		  var firstWord = -1;
          		  var secondWord = -1;
          		  for (var i = 1; i < rows.length-1; i++) {
@@ -302,6 +308,7 @@
          			  temp =  temp.substring(temp.indexOf("background-color: ") + "background-color: ".length);
          			  temp = temp.substring(0, temp.indexOf(";"));
                       $('#selWord1').append('<option value=' + temp + '>'+ rows[i].children[0].textContent +'</option>');
+                      $('#selGeoWord').append('<option value=' + (i - 1) + '>'+ rows[i].children[0].textContent +'</option>');
                       if(firstWord == -1) 
                       {
                       	firstWord = i - 1;
@@ -315,6 +322,7 @@
          		 if(firstWord != -1)  
          		 {
          			$('#selWord1')[0].selectedIndex = firstWord
+         			$('#selGeoWord')[0].selectedIndex = firstWord
          		 }
          		 if(secondWord != -1)  
          		 {
@@ -488,16 +496,8 @@
                     	 }
                     	 if(searchResultView.singleWordView != null) 
                     	 {
-                    		 var data = google.visualization.arrayToDataTable(searchResultView.singleWordView.areaChart);
-                   	        var options = {
-                   	          region: 'US', 
-                   	          colorAxis: {colors: ['black', data.color]},
-                   	          backgroundColor: '#81d4fa',
-                   	          datalessRegionColor: '#f8bbd0',
-                   	          defaultColor: '#f5f5f5',
-                   	        };
-                  			geochart.draw(data, {region: "US", resolution: "provinces", colors: [searchResultView.singleWordView.color]});
-                  			document.getElementById('geochart-colors').className = 'active';
+                    		 geoData = searchResultView.singleWordView;
+                    		 updateGeoGraph(0);
                     	 }
                     	 if(searchResultView.lineGraphView != null) 
                    		 {
@@ -520,77 +520,91 @@
          });
           }
          
+         function updateGeoGraph(index) 
+         {
+          var data = google.visualization.arrayToDataTable(geoData[index].areaChart);
+             var options = {
+               region: 'US', 
+               colorAxis: {colors: ['black', data.color]},
+               backgroundColor: '#81d4fa',
+               datalessRegionColor: '#f8bbd0',
+               defaultColor: '#f5f5f5',
+             };
+         geochart.draw(data, {region: "US", resolution: "provinces", colors: [geoData[index].color]});
+         document.getElementById('geochart-colors').className = 'active';
+         }
+         
          function updateLineGraph() 
          {
-        	 var lineGraphView = new google.visualization.DataView(lineGraphData);
-        	 var numOfColumns = lineGraphView.getNumberOfColumns();
-	 	  		var disabledColumns = [];
-	 	  		var enabledColumn1 = $('#selState1').find('option:selected').attr('value') + ": " + $('#selWord1').find('option:selected').text();
-	 	  		var column1Color =  "";
-	 	  		var enabledColumn2 = $('#selState2').find('option:selected').attr('value') + ": " + $('#selWord2').find('option:selected').text();
-	 	  		var column2Color =  "";
-	 	  		var dashedLine;
-	 	  		$("#LineSelector0").css("background", $('#selWord1').find('option:selected').attr('value'));
-	 	  		$("#LineSelector1").css("background", $('#selWord2').find('option:selected').attr('value'));
-	 	  		for(var j = 0; j < numOfColumns; j++) 
-    		  	{
-	 	  			var columnLabel = lineGraphView.getColumnLabel(j);
-	 	  			if(columnLabel != "Time" ) 
-	 	  			{
-	    	 	  		if(columnLabel == enabledColumn1) 
-	    	 	  		{
-	    	 	  			if(column1Color == "") 
-	    	 	  			{
-	    	 	  				column1Color =  $('#selWord1').find('option:selected').attr('value');
-	    	 	  			}
-	    	 	  			else 
-	    	 	  			{
-	    	 	  				column2Color =  $('#selWord1').find('option:selected').attr('value');
-	    	 	  			}
-	    	 	  		}
-	    	 	  		else if(columnLabel == enabledColumn2) 
-	    	 	  		{
-	    	 	  			if(column1Color == "") 
-	    	 	  			{
-	    	 	  				dashedLine = 0;
-	    	 	  				column1Color = $('#selWord2').find('option:selected').attr('value');
-	    	 	  			}
-	    	 	  			else 
-	    	 	  			{
-	    	 	  				dashedLine = 1;
-	    	 	  				column2Color = $('#selWord2').find('option:selected').attr('value');
-	    	 	  			}
-	    	 	  		}
-	    	 	  		else
-	    	 	  		{
-	    	 	  			disabledColumns.push(j);
-	    	 	  		}
-	 	  			}
-    		  	}
-	 	  		
-	 	  		var options;
-	 	  		if(dashedLine == 0) {
-	 	  			options = {
-	 		           		title: 'Keywords Over Time',
-	 		           		curveType: 'function',
-	 		           		legend: { position: 'top' },
-	 		           		lineWidth: 4,
-	 		 	  			colors: [column1Color,column2Color],
-	 		 	  		 	series: { 0 : { lineDashStyle: [10, 2]  }, }
-	 		 	  		};
-	 	  		}
-	 	  		else {
-	 	  			options = {
-	 		           		title: 'Keywords Over Time',
-	 		           		curveType: 'function',
-	 		           		legend: { position: 'top' },
-	 		           		lineWidth: 4,
-	 		 	  			colors: [column1Color,column2Color],
-	 		 	  		 	series: { 1 : { lineDashStyle: [10, 2]  }, }
-	 		 	  		};
-	 	  		}
-	 	  		lineGraphView.hideColumns(disabledColumns); 
-	      		lineGraphChart.draw(lineGraphView, options);
+          var lineGraphView = new google.visualization.DataView(lineGraphData);
+          var numOfColumns = lineGraphView.getNumberOfColumns();
+         var disabledColumns = [];
+         var enabledColumn1 = $('#selState1').find('option:selected').attr('value') + ": " + $('#selWord1').find('option:selected').text();
+         var column1Color =  "";
+         var enabledColumn2 = $('#selState2').find('option:selected').attr('value') + ": " + $('#selWord2').find('option:selected').text();
+         var column2Color =  "";
+         var dashedLine;
+         $("#LineSelector0").css("background", $('#selWord1').find('option:selected').attr('value'));
+         $("#LineSelector1").css("background", $('#selWord2').find('option:selected').attr('value'));
+         for(var j = 0; j < numOfColumns; j++) 
+         {
+         var columnLabel = lineGraphView.getColumnLabel(j);
+         if(columnLabel != "Time" ) 
+         {
+          		if(columnLabel == enabledColumn1) 
+          		{
+          			if(column1Color == "") 
+          			{
+          				column1Color =  $('#selWord1').find('option:selected').attr('value');
+          			}
+          			else 
+          			{
+          				column2Color =  $('#selWord1').find('option:selected').attr('value');
+          			}
+          		}
+          		else if(columnLabel == enabledColumn2) 
+          		{
+          			if(column1Color == "") 
+          			{
+          				dashedLine = 0;
+          				column1Color = $('#selWord2').find('option:selected').attr('value');
+          			}
+          			else 
+          			{
+          				dashedLine = 1;
+          				column2Color = $('#selWord2').find('option:selected').attr('value');
+          			}
+          		}
+          		else
+          		{
+          			disabledColumns.push(j);
+          		}
+         }
+         }
+         
+         var options;
+         if(dashedLine == 0) {
+         options = {
+               		title: 'Keywords Over Time',
+               		curveType: 'function',
+               		legend: { position: 'top' },
+               		lineWidth: 4,
+         		colors: [column1Color,column2Color],
+         	 	series: { 0 : { lineDashStyle: [10, 2]  }, }
+         	};
+         }
+         else {
+         options = {
+               		title: 'Keywords Over Time',
+               		curveType: 'function',
+               		legend: { position: 'top' },
+               		lineWidth: 4,
+         		colors: [column1Color,column2Color],
+         	 	series: { 1 : { lineDashStyle: [10, 2]  }, }
+         	};
+         }
+         lineGraphView.hideColumns(disabledColumns); 
+         lineGraphChart.draw(lineGraphView, options);
          }
          
          function searchPopularTerms(searchData) {
@@ -850,96 +864,122 @@
          </div>
       </div>
       <div style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;">
-      <ul class="nav nav-tabs centered second">
-         <li class="active second"><a data-toggle="tab" href="#home">Keyword Ratio Per State</a></li>
-         <li class="second"><a data-toggle="tab" href="#menu1">Keyword Occurances By State</a></li>
-         <li class="second"><a data-toggle="tab" href="#menu2">Keyword Occurances Over Time</a></li>
-      </ul>
-      <div class="tab-content"  style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;">
-         <div id="home" class="tab-pane fade in active last">
-            <div id="earthchart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
-         </div>
-         <div id="menu1" class="tab-pane fade last">
-            <div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
-         </div>
-         <div id="menu2" class="tab-pane fade last">
-            <div id="lineGraph" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
-            <div class="container first lineControls last">
-               <!-- Root accordian -->
-               <div class="panel-group first" id="accordionLineControls">
-                  <div class="panel panel-default first">
-                     <div class="panel-heading first" style="opacity: 0.4">
-                        <h4 class="panel-title first" style="text-align: center;">
-                           <a class="panel-toggle first" data-toggle="collapse" data-parent="accordionLineControls" href=".collapseLineControls" style="opacity: 1.0">
-                           	Line Graph Control
-                           </a>
-                        </h4>
-                     </div>
-                     <div class="collapseLineControls panel-body collapse in first">
-                        <div class="panel-group">
-                           <div class="panel panel-default">
-                              <div class="panel-heading"><b>First Line Series (Solid line)</b> <label id="LineSelector0"><b>COLOR</b></label></div>
-                              <div class="panel-body">
-                                 <label for="selWord1" class="col-sm-2">Select Word:</label>
-                                 <select class="form-control col-sm-4" id="selWord1" style="width:80%">
-                                 </select>
-                                 <label for="selState1" class="col-sm-2">Select State:</label>
-                                 <select class="form-control col-sm-4" id="selState1" style="width:80%">
-                                    <option value="AL">Alabama</option>                                
-                                    <option value="AK">Alaska</option>       
-                                    <option value="AZ">Arizona</option>      
-                                    <option value="AR">Arkansas</option>     
-                                    <option value="CA">California</option>   
-                                    <option value="CO">Colorado</option>     
-                                    <option value="CT">Connecticut</option>  
-                                    <option value="DE">Delaware</option>     
-                                    <option value="FL">Florida</option>      
-                                    <option value="GA">Georgia</option>      
-                                    <option value="HI">Hawaii</option>       
-                                    <option value="ID">Idaho</option>        
-                                    <option value="IL">Illinois</option>     
-                                    <option value="IN">Indiana</option>      
-                                    <option value="IA">Iowa</option>         
-                                    <option value="KS">Kansas</option>       
-                                    <option value="KY">Kentucky</option>     
-                                    <option value="LA">Louisiana</option>    
-                                    <option value="ME">Maine</option>        
-                                    <option value="MD">Maryland</option>     
-                                    <option value="MA">Massachusetts</option>
-                                    <option value="MI">Michigan</option>     
-                                    <option value="MN">Minnesota</option>    
-                                    <option value="MS">Mississippi</option>  
-                                    <option value="MO">Missouri</option>     
-                                    <option value="MT">Montana</option>      
-                                    <option value="NE">Nebraska</option>     
-                                    <option value="NV">Nevada</option>       
-                                    <option value="NH">NewHampshire</option> 
-                                    <option value="NJ">NewJersey</option>    
-                                    <option value="NM">NewMexico</option>    
-                                    <option value="NY">NewYork</option>      
-                                    <option value="NC">NorthCarolina</option>
-                                    <option value="ND">NorthDakota</option>  
-                                    <option value="OH">Ohio</option>         
-                                    <option value="OK">Oklahoma</option>     
-                                    <option value="OR">Oregon</option>       
-                                    <option value="PA">Pennsylvania</option> 
-                                    <option value="RI">RhodeIsland</option>  
-                                    <option value="SC">SouthCarolina</option>
-                                    <option value="SD">SouthDakota</option>  
-                                    <option value="TN">Tennessee</option>    
-                                    <option value="TX">Texas</option>        
-                                    <option value="UT">Utah</option>         
-                                    <option value="VT">Vermont</option>      
-                                    <option value="VA">Virginia</option>     
-                                    <option value="WA">Washington</option>   
-                                    <option value="WV">WestVirginia</option> 
-                                    <option value="WI">Wisconsin</option>    
-                                    <option value="WY">Wyoming</option>      
-                                 </select>
+         <ul class="nav nav-tabs navbar-right second">
+            <li class="active second"><a data-toggle="tab" href="#home">Keyword Ratio Per State</a></li>
+            <li class="second"><a data-toggle="tab" href="#menu1">Keyword Occurances By State</a></li>
+            <li class="second"><a data-toggle="tab" href="#menu2">Keyword Occurances Over Time</a></li>
+         </ul>
+         <div class="tab-content"  style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;">
+            <div id="home" class="tab-pane fade in active last">
+               <div id="earthchart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
+            </div>
+            <div id="menu1" class="tab-pane fade last">
+               <div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
+               <div class="container first bottomControls">
+                  <!-- Root accordian -->
+                  <div class="panel-group first" id="accordionGeoControls">
+                     <div class="panel panel-default first">
+                        <div class="panel-heading first">
+                           <h4 class="panel-title first" style="text-align: center;">
+                              <a class="panel-toggle first" data-toggle="collapse" data-parent="accordionGeoControls" href=".collapseGeoControls" style="opacity: 1.0">
+                              Map Control
+                              </a>
+                           </h4>
+                        </div>
+                        <div class="collapseGeoControls panel-body collapse in first">
+                           <div class="panel-group">
+                              <div class="panel panel-default">
+                                 <div class="panel-heading"><b>Word</b></div>
+                                 <div class="panel-body">
+                                    <label for="selGeoWord" class="col-sm-2">Select Word:</label>
+                                    <select class="form-control col-sm-10" id="selGeoWord" style="width:80%">
+                                    </select>
+                                 </div>
                               </div>
-                              
                            </div>
-                           <div class="panel panel-default">
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div id="menu2" class="tab-pane fade last">
+               <div id="lineGraph" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
+               <div class="container first bottomControls">
+                  <!-- Root accordian -->
+                  <div class="panel-group first" id="accordionLineControls">
+                     <div class="panel panel-default first">
+                        <div class="panel-heading first">
+                           <h4 class="panel-title first" style="text-align: center;">
+                              <a class="panel-toggle first" data-toggle="collapse" data-parent="accordionLineControls" href=".collapseLineControls" style="opacity: 1.0">
+                              Line Graph Control
+                              </a>
+                           </h4>
+                        </div>
+                        <div class="collapseLineControls panel-body collapse in first">
+                           <div class="panel-group">
+                              <div class="panel panel-default">
+                                 <div class="panel-heading"><b>First Line Series (Solid line)</b> <label id="LineSelector0"><b>COLOR</b></label></div>
+                                 <div class="panel-body">
+                                    <label for="selWord1" class="col-sm-2">Select Word:</label>
+                                    <select class="form-control col-sm-4" id="selWord1" style="width:80%">
+                                    </select>
+                                    <label for="selState1" class="col-sm-2">Select State:</label>
+                                    <select class="form-control col-sm-4" id="selState1" style="width:80%">
+                                       <option value="OVERALL">OVERALL</option>
+                                       <option value="AL">Alabama</option>
+                                       <option value="AK">Alaska</option>
+                                       <option value="AZ">Arizona</option>
+                                       <option value="AR">Arkansas</option>
+                                       <option value="CA">California</option>
+                                       <option value="CO">Colorado</option>
+                                       <option value="CT">Connecticut</option>
+                                       <option value="DE">Delaware</option>
+                                       <option value="FL">Florida</option>
+                                       <option value="GA">Georgia</option>
+                                       <option value="HI">Hawaii</option>
+                                       <option value="ID">Idaho</option>
+                                       <option value="IL">Illinois</option>
+                                       <option value="IN">Indiana</option>
+                                       <option value="IA">Iowa</option>
+                                       <option value="KS">Kansas</option>
+                                       <option value="KY">Kentucky</option>
+                                       <option value="LA">Louisiana</option>
+                                       <option value="ME">Maine</option>
+                                       <option value="MD">Maryland</option>
+                                       <option value="MA">Massachusetts</option>
+                                       <option value="MI">Michigan</option>
+                                       <option value="MN">Minnesota</option>
+                                       <option value="MS">Mississippi</option>
+                                       <option value="MO">Missouri</option>
+                                       <option value="MT">Montana</option>
+                                       <option value="NE">Nebraska</option>
+                                       <option value="NV">Nevada</option>
+                                       <option value="NH">NewHampshire</option>
+                                       <option value="NJ">NewJersey</option>
+                                       <option value="NM">NewMexico</option>
+                                       <option value="NY">NewYork</option>
+                                       <option value="NC">NorthCarolina</option>
+                                       <option value="ND">NorthDakota</option>
+                                       <option value="OH">Ohio</option>
+                                       <option value="OK">Oklahoma</option>
+                                       <option value="OR">Oregon</option>
+                                       <option value="PA">Pennsylvania</option>
+                                       <option value="RI">RhodeIsland</option>
+                                       <option value="SC">SouthCarolina</option>
+                                       <option value="SD">SouthDakota</option>
+                                       <option value="TN">Tennessee</option>
+                                       <option value="TX">Texas</option>
+                                       <option value="UT">Utah</option>
+                                       <option value="VT">Vermont</option>
+                                       <option value="VA">Virginia</option>
+                                       <option value="WA">Washington</option>
+                                       <option value="WV">WestVirginia</option>
+                                       <option value="WI">Wisconsin</option>
+                                       <option value="WY">Wyoming</option>
+                                    </select>
+                                 </div>
+                              </div>
+                              <div class="panel panel-default">
                                  <div class="panel-heading"><b>Second Line Series (Dotted line)</b> <label id="LineSelector1"><b>COLOR</b></label></div>
                                  <div class="panel-body">
                                     <label for="selWord2"  class="col-sm-2">Select Word:</label>
@@ -947,61 +987,62 @@
                                     </select>
                                     <label for="selState2" class="col-sm-2">Select State:</label>
                                     <select class="form-control col-sm-4" id="selState2" style="width:80%">
-                                    <option value="AL">Alabama</option>                                
-                                    <option value="AK">Alaska</option>       
-                                    <option value="AZ">Arizona</option>      
-                                    <option value="AR">Arkansas</option>     
-                                    <option value="CA">California</option>   
-                                    <option value="CO">Colorado</option>     
-                                    <option value="CT">Connecticut</option>  
-                                    <option value="DE">Delaware</option>     
-                                    <option value="FL">Florida</option>      
-                                    <option value="GA">Georgia</option>      
-                                    <option value="HI">Hawaii</option>       
-                                    <option value="ID">Idaho</option>        
-                                    <option value="IL">Illinois</option>     
-                                    <option value="IN">Indiana</option>      
-                                    <option value="IA">Iowa</option>         
-                                    <option value="KS">Kansas</option>       
-                                    <option value="KY">Kentucky</option>     
-                                    <option value="LA">Louisiana</option>    
-                                    <option value="ME">Maine</option>        
-                                    <option value="MD">Maryland</option>     
-                                    <option value="MA">Massachusetts</option>
-                                    <option value="MI">Michigan</option>     
-                                    <option value="MN">Minnesota</option>    
-                                    <option value="MS">Mississippi</option>  
-                                    <option value="MO">Missouri</option>     
-                                    <option value="MT">Montana</option>      
-                                    <option value="NE">Nebraska</option>     
-                                    <option value="NV">Nevada</option>       
-                                    <option value="NH">NewHampshire</option> 
-                                    <option value="NJ">NewJersey</option>    
-                                    <option value="NM">NewMexico</option>    
-                                    <option value="NY">NewYork</option>      
-                                    <option value="NC">NorthCarolina</option>
-                                    <option value="ND">NorthDakota</option>  
-                                    <option value="OH">Ohio</option>         
-                                    <option value="OK">Oklahoma</option>     
-                                    <option value="OR">Oregon</option>       
-                                    <option value="PA">Pennsylvania</option> 
-                                    <option value="RI">RhodeIsland</option>  
-                                    <option value="SC">SouthCarolina</option>
-                                    <option value="SD">SouthDakota</option>  
-                                    <option value="TN">Tennessee</option>    
-                                    <option value="TX">Texas</option>        
-                                    <option value="UT">Utah</option>         
-                                    <option value="VT">Vermont</option>      
-                                    <option value="VA">Virginia</option>     
-                                    <option value="WA">Washington</option>   
-                                    <option value="WV">WestVirginia</option> 
-                                    <option value="WI">Wisconsin</option>    
-                                    <option value="WY">Wyoming</option>      
+                                       <option value="OVERALL">OVERALL</option>
+                                       <option value="AL">Alabama</option>
+                                       <option value="AK">Alaska</option>
+                                       <option value="AZ">Arizona</option>
+                                       <option value="AR">Arkansas</option>
+                                       <option value="CA">California</option>
+                                       <option value="CO">Colorado</option>
+                                       <option value="CT">Connecticut</option>
+                                       <option value="DE">Delaware</option>
+                                       <option value="FL">Florida</option>
+                                       <option value="GA">Georgia</option>
+                                       <option value="HI">Hawaii</option>
+                                       <option value="ID">Idaho</option>
+                                       <option value="IL">Illinois</option>
+                                       <option value="IN">Indiana</option>
+                                       <option value="IA">Iowa</option>
+                                       <option value="KS">Kansas</option>
+                                       <option value="KY">Kentucky</option>
+                                       <option value="LA">Louisiana</option>
+                                       <option value="ME">Maine</option>
+                                       <option value="MD">Maryland</option>
+                                       <option value="MA">Massachusetts</option>
+                                       <option value="MI">Michigan</option>
+                                       <option value="MN">Minnesota</option>
+                                       <option value="MS">Mississippi</option>
+                                       <option value="MO">Missouri</option>
+                                       <option value="MT">Montana</option>
+                                       <option value="NE">Nebraska</option>
+                                       <option value="NV">Nevada</option>
+                                       <option value="NH">NewHampshire</option>
+                                       <option value="NJ">NewJersey</option>
+                                       <option value="NM">NewMexico</option>
+                                       <option value="NY">NewYork</option>
+                                       <option value="NC">NorthCarolina</option>
+                                       <option value="ND">NorthDakota</option>
+                                       <option value="OH">Ohio</option>
+                                       <option value="OK">Oklahoma</option>
+                                       <option value="OR">Oregon</option>
+                                       <option value="PA">Pennsylvania</option>
+                                       <option value="RI">RhodeIsland</option>
+                                       <option value="SC">SouthCarolina</option>
+                                       <option value="SD">SouthDakota</option>
+                                       <option value="TN">Tennessee</option>
+                                       <option value="TX">Texas</option>
+                                       <option value="UT">Utah</option>
+                                       <option value="VT">Vermont</option>
+                                       <option value="VA">Virginia</option>
+                                       <option value="WA">Washington</option>
+                                       <option value="WV">WestVirginia</option>
+                                       <option value="WI">Wisconsin</option>
+                                       <option value="WY">Wyoming</option>
                                     </select>
                                  </div>
                               </div>
+                           </div>
                         </div>
-                     </div>
                      </div>
                   </div>
                </div>

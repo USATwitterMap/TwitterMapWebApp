@@ -69,52 +69,69 @@ public class SearchWordsController {
 		List<TwitterWordTimeData> timeResults = wordsDao.GetOccurancesByTime(wordQuery);
 		
 		TwitterSearchView view = new TwitterSearchView();
-		if(search.length == 1) 
+		view.setSingleWordView(new SingleWordView[wordQuery.getWords().size()]);
+		for(int word = 0; word < wordQuery.getWords().size(); word++) 
 		{
-			view.setSingleWordView(searchSingle(results, populationData, query));
+			view.getSingleWordView()[word] = searchSingle(results, populationData, query, wordQuery.getWords().get(word));
 		}
 		view.setMultiWordView(searchMultiple(results, search));
-		view.setLineGraphView(searchWordByTime(timeResults, populationData, wordQuery));
+		view.setLineGraphView(searchWordByTime(timeResults, populationData, wordQuery, query.isPopulationControl()));
 		return view;
 	}
 	
-	private SingleWordView searchSingle(List<TwitterWordData> results, List<StatePopulation> populationData, TwitterSearchQuery query)
+	private SingleWordView searchSingle(List<TwitterWordData> results, List<StatePopulation> populationData, TwitterSearchQuery query, String targetWord)
 	{	
 		//prepare return structure
 		String[][] search = query.getSearchData();
 		SingleWordView view = new SingleWordView();
-		Object[][] areaMapData = new Object[results.size()+1][2];
-		areaMapData[0][0] = "State";
-		areaMapData[0][1] = search[0][0];
-		view.setColor(search[0][1]);
+		List<Object[]> areaMapData = new ArrayList<Object[]>();
+		areaMapData.add(new Object[2]);
+		areaMapData.get(0)[0] = "State";
+		for(int index = 0; index < search.length; index++)
+		{
+			if(search[index][0].equals(targetWord)) 
+			{
+				areaMapData.get(0)[1] = search[index][0];
+				view.setColor(search[index][1]);
+				break;
+			}
+		}
 		for(int index = 0; index < results.size(); index++) 
 		{
-			areaMapData[index + 1][0] = "US-" + results.get(index).getState();
-			double occurances = results.get(index).getOccurances();
-			if(query.isPopulationControl()) 
+			if(results.get(index).getWord().equals(targetWord))
 			{
-				for(StatePopulation population : populationData) 
+				areaMapData.add(new Object[2]);
+				areaMapData.get(areaMapData.size() - 1)[0] = "US-" + results.get(index).getState();
+				double occurances = results.get(index).getOccurances();
+				if(query.isPopulationControl()) 
 				{
-					if(population.getState().equals(results.get(index).getState())) 
+					for(StatePopulation population : populationData) 
 					{
-						double factor = population.getPopulation() / 1000000;
-						if(factor > 0) 
-						{						
-							occurances = occurances / factor;
-						}
-						else 
+						if(population.getState().equals(results.get(index).getState())) 
 						{
-							occurances = 0;
+							double factor = population.getPopulation() / 1000000;
+							if(factor > 0) 
+							{						
+								occurances = occurances / factor;
+							}
+							else 
+							{
+								occurances = 0;
+							}
+							break;
 						}
-						break;
 					}
 				}
+				//round to two decimal places and store
+				areaMapData.get(areaMapData.size() - 1)[1] = Math.round(occurances * 100.0) / 100.0;
 			}
-			//round to two decimal places and store
-			areaMapData[index + 1][1] = Math.round(occurances * 100.0) / 100.0;
 		}
-		
-		view.setAreaChart(areaMapData);
+		Object[][] areaChartArray = new Object[areaMapData.size()][2];
+		for(int index = 0; index < areaMapData.size(); index++) 
+		{
+			areaChartArray[index] = areaMapData.get(index);
+		}
+		view.setAreaChart(areaChartArray);
 		return view;
 	}
 
@@ -182,31 +199,93 @@ public class SearchWordsController {
 		return systemHealth;
 	}
 
-	private LineGraphView searchWordByTime(List<TwitterWordTimeData> results, List<StatePopulation> populationData, TwitterWordTimeQuery wordQuery)
+	private LineGraphView searchWordByTime(List<TwitterWordTimeData> results, List<StatePopulation> populationData, TwitterWordTimeQuery wordQuery, boolean popControl)
 	{
 		LineGraphView view = new LineGraphView();
-		
-		view.setLineData(new Object[wordQuery.getSegments() + 1][wordQuery.getWords().size() * populationData.size() + 1]);
+		view.setLineData(new Object[wordQuery.getSegments() + 1][wordQuery.getWords().size() * (populationData.size() + 1) + 1]);
 		view.getLineData()[0][0] = "Time";
-		for(int stateIndex = 0; stateIndex < populationData.size(); stateIndex ++) 
+		int totalPopulation = 0;
+		for(int stateIndex = 0; stateIndex <= populationData.size(); stateIndex ++) 
 		{
 			for(int wordIndex = 1; wordIndex <= wordQuery.getWords().size(); wordIndex ++) 
 			{
-				view.getLineData()[0][stateIndex * wordQuery.getWords().size() + wordIndex] = populationData.get(stateIndex).getState() + ": " + wordQuery.getWords().get(wordIndex - 1);
+				if(stateIndex < populationData.size()) 
+				{
+					view.getLineData()[0][stateIndex * wordQuery.getWords().size() + wordIndex] = populationData.get(stateIndex).getState() + ": " + wordQuery.getWords().get(wordIndex - 1);
+				}
+				else {
+					//add overall per word per state
+					view.getLineData()[0][stateIndex * wordQuery.getWords().size() + wordIndex] = "OVERALL: " + wordQuery.getWords().get(wordIndex - 1);
+				}
+			}
+			if(stateIndex < populationData.size()) 
+			{
+				totalPopulation += populationData.get(stateIndex).getPopulation();
 			}
 		}
 		for(TwitterWordTimeData result : results) 
 		{
-			for(int columnIndex = 1; columnIndex < view.getLineData()[0].length; columnIndex++)
+			for(int columnIndex = 1; columnIndex < view.getLineData()[0].length - 1; columnIndex++)
 			{
 				if(view.getLineData()[0][columnIndex].equals(result.getState() + ": " + result.getWord())) 
 				{
-					view.getLineData()[result.getTimeSegment() + 1][columnIndex] = result.getOccurances();
+					view.getLineData()[result.getTimeSegment() + 1][columnIndex] = (double)result.getOccurances();
 					view.getLineData()[result.getTimeSegment() + 1][0] = result.getTime().toLocaleString();
-					break;
+					for(int overallIndex = view.getLineData()[0].length - 1; overallIndex >= 0; overallIndex--)
+					{
+						if(view.getLineData()[0][overallIndex].equals("OVERALL: " + result.getWord())) 
+						{
+							if(view.getLineData()[result.getTimeSegment() + 1][overallIndex] == null) 
+							{
+								view.getLineData()[result.getTimeSegment() + 1][overallIndex] = (double)result.getOccurances();
+							}
+							else 
+							{
+								view.getLineData()[result.getTimeSegment() + 1][overallIndex] = (double)view.getLineData()[result.getTimeSegment() + 1][overallIndex] + result.getOccurances();
+							}
+							break;
+						}
+					}
 				}
 			}
 		}
+		
+		if(popControl) 
+		{
+			for(int index = 1; index < view.getLineData().length; index++) 
+			{
+				for(int stateIndex = 1; stateIndex < view.getLineData()[index].length; stateIndex ++) 
+				{
+					double factor = 1.0;
+					double occurances = (double)view.getLineData()[index][stateIndex];
+					if(!((String)view.getLineData()[0][stateIndex]).startsWith("OVERALL")) 
+					{
+						for(StatePopulation population : populationData)
+						{
+							if(((String)view.getLineData()[0][stateIndex]).startsWith(population.getState())) 
+							{
+								factor = population.getPopulation() / 1000000;
+								break;
+							}
+						}
+					}
+					else 
+					{
+						factor = totalPopulation / 1000000;
+					}
+					if(factor > 0) 
+					{						
+						occurances = occurances / factor;
+					}
+					else 
+					{
+						occurances = 0;
+					}
+					view.getLineData()[index][stateIndex] = occurances;
+				}
+			}
+		}
+		
 		return view;
 	}
 	
