@@ -40,6 +40,9 @@
          .second {
          z-index: 1;
          }
+         .last {
+         z-index: 0;
+         }
          .colorTable {
          border-collapse:collapse;
          border-spacing:0;
@@ -94,6 +97,7 @@
          .pill-content > .pill-pane:not(.active) {
          display: block;
          position: absolute;
+         zindex: 0;
          height: 100%;
          width: 100%;
          } 
@@ -289,6 +293,8 @@
          		  var time = $('#startEndTime span')[0].innerText;
          		  $('#selWord1').empty();
          		  $('#selWord2').empty();
+         		  var firstWord = -1;
+         		  var secondWord = -1;
          		  for (var i = 1; i < rows.length-1; i++) {
          			  var wordDetails = [];
          			  wordDetails.push(rows[i].children[0].textContent);
@@ -296,11 +302,24 @@
          			  temp =  temp.substring(temp.indexOf("background-color: ") + "background-color: ".length);
          			  temp = temp.substring(0, temp.indexOf(";"));
                       $('#selWord1').append('<option value=' + temp + '>'+ rows[i].children[0].textContent +'</option>');
+                      if(firstWord == -1) 
+                      {
+                      	firstWord = i - 1;
+                      }
                       $('#selWord2').append('<option value=' + temp + '>'+ rows[i].children[0].textContent +'</option>');
+                      secondWord =  i - 1;
          			  wordDetails.push(temp);
          			  wordDetails.push(time);
          			  searchData.push(wordDetails);
          		  }
+         		 if(firstWord != -1)  
+         		 {
+         			$('#selWord1')[0].selectedIndex = firstWord
+         		 }
+         		 if(secondWord != -1)  
+         		 {
+         		 	$('#selWord2')[0].selectedIndex = secondWord
+         		 }
          		 var query = { "searchData": searchData, "populationControl": $("#PopControl").is(':checked') };
          		search(query);
          		  if(searchData.length < 0) 
@@ -478,6 +497,7 @@
                    	          defaultColor: '#f5f5f5',
                    	        };
                   			geochart.draw(data, {region: "US", resolution: "provinces", colors: [searchResultView.singleWordView.color]});
+                  			document.getElementById('geochart-colors').className = 'active';
                     	 }
                     	 if(searchResultView.lineGraphView != null) 
                    		 {
@@ -506,24 +526,69 @@
         	 var numOfColumns = lineGraphView.getNumberOfColumns();
 	 	  		var disabledColumns = [];
 	 	  		var enabledColumn1 = $('#selState1').find('option:selected').attr('value') + ": " + $('#selWord1').find('option:selected').text();
-	 	  		var column1Color =  $('#selWord1').find('option:selected').attr('value');
+	 	  		var column1Color =  "";
 	 	  		var enabledColumn2 = $('#selState2').find('option:selected').attr('value') + ": " + $('#selWord2').find('option:selected').text();
-	 	  		var column2Color =  $('#selWord2').find('option:selected').attr('value');
+	 	  		var column2Color =  "";
+	 	  		var dashedLine;
+	 	  		$("#LineSelector0").css("background", $('#selWord1').find('option:selected').attr('value'));
+	 	  		$("#LineSelector1").css("background", $('#selWord2').find('option:selected').attr('value'));
 	 	  		for(var j = 0; j < numOfColumns; j++) 
     		  	{
 	 	  			var columnLabel = lineGraphView.getColumnLabel(j);
-    	 	  		if(columnLabel != "Time" && columnLabel != enabledColumn1 && columnLabel != enabledColumn2) {
-    	 	  			disabledColumns.push(j);
-    	 	  		}
+	 	  			if(columnLabel != "Time" ) 
+	 	  			{
+	    	 	  		if(columnLabel == enabledColumn1) 
+	    	 	  		{
+	    	 	  			if(column1Color == "") 
+	    	 	  			{
+	    	 	  				column1Color =  $('#selWord1').find('option:selected').attr('value');
+	    	 	  			}
+	    	 	  			else 
+	    	 	  			{
+	    	 	  				column2Color =  $('#selWord1').find('option:selected').attr('value');
+	    	 	  			}
+	    	 	  		}
+	    	 	  		else if(columnLabel == enabledColumn2) 
+	    	 	  		{
+	    	 	  			if(column1Color == "") 
+	    	 	  			{
+	    	 	  				dashedLine = 0;
+	    	 	  				column1Color = $('#selWord2').find('option:selected').attr('value');
+	    	 	  			}
+	    	 	  			else 
+	    	 	  			{
+	    	 	  				dashedLine = 1;
+	    	 	  				column2Color = $('#selWord2').find('option:selected').attr('value');
+	    	 	  			}
+	    	 	  		}
+	    	 	  		else
+	    	 	  		{
+	    	 	  			disabledColumns.push(j);
+	    	 	  		}
+	 	  			}
     		  	}
-	 	  		var options = {
-	           		title: 'Keywords Over Time',
-	           		curveType: 'function',
-	           		legend: { position: 'top' },
-	           		lineWidth: 4,
-	 	  			colors: [column1Color,column2Color],
-	 	  		 	series: { 1: { lineDashStyle: [10, 2]  }, }
-	 	  		};
+	 	  		
+	 	  		var options;
+	 	  		if(dashedLine == 0) {
+	 	  			options = {
+	 		           		title: 'Keywords Over Time',
+	 		           		curveType: 'function',
+	 		           		legend: { position: 'top' },
+	 		           		lineWidth: 4,
+	 		 	  			colors: [column1Color,column2Color],
+	 		 	  		 	series: { 0 : { lineDashStyle: [10, 2]  }, }
+	 		 	  		};
+	 	  		}
+	 	  		else {
+	 	  			options = {
+	 		           		title: 'Keywords Over Time',
+	 		           		curveType: 'function',
+	 		           		legend: { position: 'top' },
+	 		           		lineWidth: 4,
+	 		 	  			colors: [column1Color,column2Color],
+	 		 	  		 	series: { 1 : { lineDashStyle: [10, 2]  }, }
+	 		 	  		};
+	 	  		}
 	 	  		lineGraphView.hideColumns(disabledColumns); 
 	      		lineGraphChart.draw(lineGraphView, options);
          }
@@ -784,28 +849,28 @@
             </div>
          </div>
       </div>
-      <div class="second" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;">
-      <ul class="nav nav-tabs centered">
-         <li class="active"><a data-toggle="tab" href="#home">Keyword Ratio Per State</a></li>
-         <li><a data-toggle="tab" href="#menu1">Keyword Occurances By State</a></li>
-         <li><a data-toggle="tab" href="#menu2">Keyword Occurances Over Time</a></li>
+      <div style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;">
+      <ul class="nav nav-tabs centered second">
+         <li class="active second"><a data-toggle="tab" href="#home">Keyword Ratio Per State</a></li>
+         <li class="second"><a data-toggle="tab" href="#menu1">Keyword Occurances By State</a></li>
+         <li class="second"><a data-toggle="tab" href="#menu2">Keyword Occurances Over Time</a></li>
       </ul>
-      <div class="tab-content" >
-         <div id="home" class="tab-pane fade in active">
-            <div id="earthchart-colors" style="height:100%; width:100%;"></div>
+      <div class="tab-content"  style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;">
+         <div id="home" class="tab-pane fade in active last">
+            <div id="earthchart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
          </div>
-         <div id="menu1" class="tab-pane fade">
-            <div id="geochart-colors" style="height:100%; width:100%;"></div>
+         <div id="menu1" class="tab-pane fade last">
+            <div id="geochart-colors" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
          </div>
-         <div id="menu2" class="tab-pane fade">
-            <div id="lineGraph" style="height:100%; width:100%;"></div>
-            <div class="container first lineControls">
+         <div id="menu2" class="tab-pane fade last">
+            <div id="lineGraph" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
+            <div class="container first lineControls last">
                <!-- Root accordian -->
                <div class="panel-group first" id="accordionLineControls">
                   <div class="panel panel-default first">
-                     <div class="panel-heading first">
+                     <div class="panel-heading first" style="opacity: 0.4">
                         <h4 class="panel-title first" style="text-align: center;">
-                           <a class="panel-toggle first" data-toggle="collapse" data-parent="accordionLineControls" href=".collapseLineControls">
+                           <a class="panel-toggle first" data-toggle="collapse" data-parent="accordionLineControls" href=".collapseLineControls" style="opacity: 1.0">
                            	Line Graph Control
                            </a>
                         </h4>
@@ -813,14 +878,14 @@
                      <div class="collapseLineControls panel-body collapse in first">
                         <div class="panel-group">
                            <div class="panel panel-default">
-                              <div class="panel-heading">First Line Series (Dotted line)</div>
+                              <div class="panel-heading"><b>First Line Series (Solid line)</b> <label id="LineSelector0"><b>COLOR</b></label></div>
                               <div class="panel-body">
                                  <label for="selWord1" class="col-sm-2">Select Word:</label>
                                  <select class="form-control col-sm-4" id="selWord1" style="width:80%">
                                  </select>
                                  <label for="selState1" class="col-sm-2">Select State:</label>
                                  <select class="form-control col-sm-4" id="selState1" style="width:80%">
-                                    																		<option value="AL">Alabama</option>                                
+                                    <option value="AL">Alabama</option>                                
                                     <option value="AK">Alaska</option>       
                                     <option value="AZ">Arizona</option>      
                                     <option value="AR">Arkansas</option>     
@@ -872,8 +937,10 @@
                                     <option value="WY">Wyoming</option>      
                                  </select>
                               </div>
-                              <div class="panel panel-default">
-                                 <div class="panel-heading">Second Line Series (Solid line)</div>
+                              
+                           </div>
+                           <div class="panel panel-default">
+                                 <div class="panel-heading"><b>Second Line Series (Dotted line)</b> <label id="LineSelector1"><b>COLOR</b></label></div>
                                  <div class="panel-body">
                                     <label for="selWord2"  class="col-sm-2">Select Word:</label>
                                     <select class="form-control col-sm-4" id="selWord2" style="width:80%">
@@ -933,7 +1000,6 @@
                                     </select>
                                  </div>
                               </div>
-                           </div>
                         </div>
                      </div>
                      </div>
