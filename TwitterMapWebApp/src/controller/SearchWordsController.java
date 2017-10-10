@@ -38,10 +38,4 @@ public class SearchWordsController {
 		return view;
 		
 	}
-	
-	@RequestMapping(value = "twitterTimeWindow", method = RequestMethod.GET)
-	public ModelAndView twitterTimeWindow() {
-		SearchScreenView vo =new SearchScreenView();
-		return new ModelAndView("twitterWordSearch", "searchInitData", vo);
-   }
 }
