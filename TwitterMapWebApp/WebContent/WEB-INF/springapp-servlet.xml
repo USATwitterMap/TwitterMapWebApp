@@ -12,10 +12,17 @@
     <context:annotation-config/>
     <mvc:annotation-driven />
     <context:component-scan base-package="controller" />
+    <context:component-scan base-package="service" />
     
 	<bean id="wordsDao" class="dao.TwitterDataDaoImpl" />
 	<bean id="popDao" class="dao.StatePopulationDaoImpl" />
 	<bean id="popularTermsDao" class="dao.PopularTermsDaoImpl" />
+	
+	<bean id="systemHealthService" class="service.SystemHealthServiceImpl" />
+	<bean id="popularTermsService" class="service.PopularTermsServiceImpl" />
+	<bean id="geoChartService" class="service.GeoChartServiceImpl" />
+	<bean id="lineGraphService" class="service.LineGraphServiceImpl" />
+	<bean id="pieGraphService" class="service.PieGraphServiceImpl" />
 
 	<bean class = "org.springframework.web.servlet.view.InternalResourceViewResolver">
 	      <property name = "prefix" value = "/WEB-INF/jsp/" />

@@ -1,9 +1,8 @@
 package view;
 
-public class SingleWordView {
+public class SingleWordView{
 	private Object[][] areaChart;
 	private String color;
-	private Object[][] systemHealth;
 
 	public Object[][] getAreaChart() {
 		return areaChart;
@@ -19,13 +18,5 @@ public class SingleWordView {
 
 	public void setColor(String color) {
 		this.color = color;
-	}
-
-	public Object[][] getSystemHealth() {
-		return systemHealth;
-	}
-
-	public void setSystemHealth(Object[][] systemHealth) {
-		this.systemHealth = systemHealth;
 	}
 }

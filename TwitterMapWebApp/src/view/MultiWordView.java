@@ -1,6 +1,6 @@
 package view;
 
-public class MultiWordView {
+public class MultiWordView{
 	private LocationView[] locations;
 
 	public LocationView[] getLocations() {

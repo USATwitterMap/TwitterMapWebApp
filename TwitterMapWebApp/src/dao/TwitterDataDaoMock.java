@@ -4,12 +4,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import controller.StateLocations;
 import dao.queries.TwitterWordQuery;
 import dao.queries.TwitterWordTimeQuery;
 import dao.results.SystemDiag;
 import dao.results.TwitterWordData;
 import dao.results.TwitterWordTimeData;
+import service.StateLocations;
 
 public class TwitterDataDaoMock implements TwitterDataDao {
 

@@ -1,7 +1,6 @@
 package view;
 
-public class LineGraphView 
-{
+public class LineGraphView {
 	private Object[][] lineData;
 
 	public Object[][] getLineData() {

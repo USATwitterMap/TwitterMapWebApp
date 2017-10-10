@@ -3,8 +3,8 @@ package dao;
 import java.util.ArrayList;
 import java.util.List;
 
-import controller.StateLocations;
 import dao.results.StatePopulation;
+import service.StateLocations;
 
 public class StatePopulationDaoMock implements StatePopulationDao{
 

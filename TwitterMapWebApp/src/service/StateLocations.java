@@ -1,4 +1,4 @@
-package controller;
+package service;
 
 public enum StateLocations {
 	Alabama("Alabama", "AL", -86.791130, 32.806671, 1),
@@ -83,8 +83,6 @@ public enum StateLocations {
     	//cycle through all the states
     	for(StateLocations aState : StateLocations.values()) 
     	{
-    		//check if state contains either the full state name or abbreviation 
-    		//Potentially a lot of false positives here...
     		if(input.contains(aState.stateAbbr)) {
     			result = aState;
     			break;

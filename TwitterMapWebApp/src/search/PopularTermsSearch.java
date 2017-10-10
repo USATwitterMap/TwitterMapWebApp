@@ -1,4 +1,4 @@
-package view;
+package search;
 
 public class PopularTermsSearch {
 	private String searchTime;

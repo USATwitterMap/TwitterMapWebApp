@@ -1,6 +1,6 @@
-package view;
+package search;
 
-public class TwitterSearchQuery 
+public class TwitterWordSearch 
 {
 	private String[][] searchData;
 	private boolean populationControl;
