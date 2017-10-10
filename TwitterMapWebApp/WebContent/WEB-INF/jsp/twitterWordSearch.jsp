@@ -3,7 +3,7 @@
    <head>
       <title>Spring MVC Form Handling</title>
       <style>
-         body{margin:40px;}
+         
          .btn-circleadd.btn-lg {
          width: 25px;
          height: 25px;
@@ -84,6 +84,9 @@
          .btn-space {
          margin-top: 10px;
          }
+         .panel-heading {
+		    cursor: pointer;
+		}
          .nav-tabs.centered > li, .nav-pills.centered > li {
          float:none;
          display:inline-block;
@@ -101,6 +104,7 @@
          height: 100%;
          width: 100%;
          } 
+
       </style>
       <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
       <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -173,7 +177,7 @@
           			  } 
          			]
          };
-          lineGraphChart = new google.visualization.LineChart(document.getElementById('lineGraph'));
+          lineGraphChart = new google.visualization.ScatterChart(document.getElementById('lineGraph'));
           geochart = new google.visualization.GeoChart(document.getElementById('geochart-colors'));
           geochart.draw(data, {region: "US", resolution: "provinces"});
           earthchart = new google.maps.Map(document.getElementById('earthchart-colors'), mapOptions);
@@ -585,6 +589,8 @@
          var options;
          if(dashedLine == 0) {
          options = {
+        		    hAxis: { textPosition: 'out' },
+        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
                		title: 'Keywords Over Time',
                		curveType: 'function',
                		legend: { position: 'top' },
@@ -595,7 +601,9 @@
          }
          else {
          options = {
-               		title: 'Keywords Over Time',
+        		    hAxis: { textPosition: 'out' },
+        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
+         			title: 'Keywords Over Time',
                		curveType: 'function',
                		legend: { position: 'top' },
                		lineWidth: 4,
@@ -750,15 +758,13 @@
             </div>
          </div>
       </div>
-      <div class="container first col-sm-4" style="width: 500px; ">
+      <div class="container first col-sm-4" style="width: 350px; ">
          <!-- Root accordian -->
          <div class="panel-group first container-vert-fluid" id="accordionControls" style="max-height: 90%">
             <div class="panel panel-default first">
-               <div class="panel-heading first">
+               <div class="panel-heading panel-toggle first" data-toggle="collapse" data-parent="#accordionControls" data-target=".collapseTarget">
                   <h4 class="panel-title first" style="text-align: center">
-                     <a class="panel-toggle first" data-toggle="collapse" data-parent="#accordionControls" href=".collapseTarget">
                      Search Controls
-                     </a>
                   </h4>
                </div>
                <div class="collapseTarget collapse in">
@@ -859,11 +865,9 @@
                   <!-- Root accordian -->
                   <div class="panel-group first" id="accordionGeoControls">
                      <div class="panel panel-default first">
-                        <div class="panel-heading first">
+                        <div class="panel-heading panel-toggle first" data-toggle="collapse" data-parent="accordionGeoControls" data-target=".collapseGeoControls">
                            <h4 class="panel-title first" style="text-align: center;">
-                              <a class="panel-toggle first" data-toggle="collapse" data-parent="accordionGeoControls" href=".collapseGeoControls" style="opacity: 1.0">
                               Map Control
-                              </a>
                            </h4>
                         </div>
                         <div class="collapseGeoControls panel-body collapse in first">
@@ -883,16 +887,14 @@
                </div>
             </div>
             <div id="menu2" class="tab-pane fade last">
-               <div id="lineGraph" style="height:100%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
+               <div id="lineGraph" style="height:80%; width:100%; position: absolute;top: 0px;left: 0px;"></div>
                <div class="container first bottomControls">
                   <!-- Root accordian -->
                   <div class="panel-group first" id="accordionLineControls">
                      <div class="panel panel-default first">
-                        <div class="panel-heading first">
+                        <div class="panel-heading panel-toggle first" data-toggle="collapse" data-parent="accordionLineControls" data-target=".collapseLineControls">
                            <h4 class="panel-title first" style="text-align: center;">
-                              <a class="panel-toggle first" data-toggle="collapse" data-parent="accordionLineControls" href=".collapseLineControls" style="opacity: 1.0">
                               Line Graph Control
-                              </a>
                            </h4>
                         </div>
                         <div class="collapseLineControls panel-body collapse in first">
