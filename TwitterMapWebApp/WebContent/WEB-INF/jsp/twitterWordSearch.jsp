@@ -622,7 +622,7 @@
 	         options = {
 	        		    hAxis: { textPosition: 'out' },
 	        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
-	               		title: 'Keywords Over Time (Tweets per 100,000 People)',
+	               		title: 'Keywords Over Time (Tweets per 1,000,000 People)',
 	               		curveType: 'function',
 	               		legend: { position: 'top' },
 	               		lineWidth: 4,
@@ -634,7 +634,7 @@
 	         options = {
 	        		    hAxis: { textPosition: 'out' },
 	        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
-	         			title: 'Keywords Over Time (Tweets per 100,000 People)',
+	         			title: 'Keywords Over Time (Tweets per 1,000,000 People)',
 	               		curveType: 'function',
 	               		legend: { position: 'top' },
 	               		lineWidth: 4,
