@@ -123,6 +123,38 @@
          'mapsApiKey': 'AIzaSyCd9uxfx1yJarUMlvGVOTNEhiDZHCKbEvU'
          });
          google.charts.setOnLoadCallback(drawRegionsMap);
+         google.charts.setOnLoadCallback(retrieveSystemHealth);
+         
+         function retrieveSystemHealth() {
+       	  var jsonRaw = $('#systemHealthData')[0].value;
+       	  var systemHealthData = JSON.parse(jsonRaw);
+	            var dataTable = new google.visualization.DataTable();
+	            	
+	             dataTable.addColumn({ type: 'date', id: 'Date' });
+	             dataTable.addColumn({ type: 'number', id: 'Won/Loss' });
+	             var arrayLength = systemHealthData.systemHealth.length;
+	             var lowestMonth = 12;
+	             for (var i = 0; i < arrayLength; i++) {
+	             	var resolvedDate = new Date(systemHealthData.systemHealth[i][0]);
+	             	dataTable.addRow([resolvedDate, systemHealthData.systemHealth[i][1]]);
+	             	if(lowestMonth > resolvedDate.getMonth()) 
+	             	{
+	             		lowestMonth = resolvedDate.getMonth();
+	             	}
+	             }
+	             
+	             var calOptions = {
+	            		title: "System Downtime - Missing Data",
+	            		colorAxis: {minValue: 0, maxValue: 23, colors: ['#00FF00', '#FF0000']},
+	             	width: '1000px'
+	             };
+	             document.getElementById('calendar_basic').setAttribute("style","width:1000px");
+	             calendarChart.draw(dataTable, calOptions);
+	             $(".container-fluid").animate({scrollLeft: (lowestMonth / 12) * 1000}, 800);
+	             $('#loading-indicator-calendar').hide();
+             
+            }
+         
          function drawRegionsMap() {
          var data = google.visualization.arrayToDataTable([
           ['State', 'Word'],
@@ -182,8 +214,6 @@
           geochart.draw(data, {region: "US", resolution: "provinces"});
           earthchart = new google.maps.Map(document.getElementById('earthchart-colors'), mapOptions);
           calendarChart = new google.visualization.Calendar(document.getElementById('calendar_basic'));
-          
-          retrieveSystemHealth();
          };
       </script>
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -596,9 +626,9 @@
                		legend: { position: 'top' },
                		lineWidth: 4,
          		colors: [column1Color,column2Color],
-         	 	series: { 0 : { lineDashStyle: [10, 2]  }, }
-         	};
-         }
+         		series: { 0 : { lineDashStyle: [10, 2]  }}
+         	 	};
+  			}
          else {
          options = {
         		    hAxis: { textPosition: 'out' },
@@ -608,8 +638,8 @@
                		legend: { position: 'top' },
                		lineWidth: 4,
          		colors: [column1Color,column2Color],
-         	 	series: { 1 : { lineDashStyle: [10, 2]  }, }
-         	};
+         	 	series: { 1 : { lineDashStyle: [10, 2]  }}
+         	 	};
          }
          lineGraphView.hideColumns(disabledColumns); 
          lineGraphChart.draw(lineGraphView, options);
@@ -648,36 +678,6 @@
                        
            });
             }
-          
-          function retrieveSystemHealth() {
-        	  var jsonRaw = $('#systemHealthData')[0].value;
-        	  var systemHealthData = JSON.parse(jsonRaw);
-	            var dataTable = new google.visualization.DataTable();
-	            	
-	             dataTable.addColumn({ type: 'date', id: 'Date' });
-	             dataTable.addColumn({ type: 'number', id: 'Won/Loss' });
-	             var arrayLength = systemHealthData.systemHealth.length;
-	             var lowestMonth = 12;
-	             for (var i = 0; i < arrayLength; i++) {
-	             	var resolvedDate = new Date(systemHealthData.systemHealth[i][0]);
-	             	dataTable.addRow([resolvedDate, systemHealthData.systemHealth[i][1]]);
-	             	if(lowestMonth > resolvedDate.getMonth()) 
-	             	{
-	             		lowestMonth = resolvedDate.getMonth();
-	             	}
-	             }
-	             
-	             var calOptions = {
-	            		title: "System Downtime - Missing Data",
-	            		colorAxis: {minValue: 0, maxValue: 23, colors: ['#00FF00', '#FF0000']},
-	             	width: '1000px'
-	             };
-	             document.getElementById('calendar_basic').setAttribute("style","width:1000px");
-	             calendarChart.draw(dataTable, calOptions);
-	             $(".container-fluid").animate({scrollLeft: (lowestMonth / 12) * 1000}, 800);
-	             $('#loading-indicator-calendar').hide();
-              
-             }
           
           function ChartMarker( options ) {
             this.setValues( options );
@@ -758,7 +758,7 @@
             </div>
          </div>
       </div>
-      <div class="container first col-sm-4" style="width: 350px; ">
+      <div class="container first col-sm-4" style="width: 375px;">
          <!-- Root accordian -->
          <div class="panel-group first container-vert-fluid" id="accordionControls" style="max-height: 90%">
             <div class="panel panel-default first">

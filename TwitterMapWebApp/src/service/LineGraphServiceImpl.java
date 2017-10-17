@@ -1,6 +1,10 @@
 package service;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +34,21 @@ public class LineGraphServiceImpl implements LineGraphService {
 		String[][] search = query.getSearchData();
 		wordQuery.setStartDate(search[0][2].substring(0, search[0][2].indexOf(" -")));
 		wordQuery.setStopDate(search[0][2].substring(search[0][2].indexOf("- ") + 2));
+		wordQuery.setSegments(100);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh");
+	    Timestamp startTime = null;
+	    Timestamp stopTime = null;
+	    try {
+	    	 Date parsedDate = dateFormat.parse(wordQuery.getStartDate());
+	    	 startTime = new java.sql.Timestamp(parsedDate.getTime());
+	    	 parsedDate = dateFormat.parse(wordQuery.getStopDate());
+	    	 stopTime = new java.sql.Timestamp(parsedDate.getTime());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    long timeSegmentsDelta = (stopTime.getTime() - startTime.getTime()) / wordQuery.getSegments();
 		wordQuery.setWords(new ArrayList<String>());
-		wordQuery.setSegments(50);
 		for(int index = 0; index < search.length; index++)
 		{
 			wordQuery.getWords().add(search[index][0]);
@@ -69,10 +86,13 @@ public class LineGraphServiceImpl implements LineGraphService {
 				if(view.getLineData()[0][columnIndex].equals(result.getState() + ": " + result.getWord())) 
 				{
 					view.getLineData()[result.getTimeSegment() + 1][columnIndex] = (double)result.getOccurances();
+					if(result.getTime() == null) {
+						result.setTime(new java.sql.Timestamp(startTime.getTime() + timeSegmentsDelta * result.getTimeSegment()));
+					}
 					view.getLineData()[result.getTimeSegment() + 1][0] = result.getTime().toLocaleString();
 					for(int overallIndex = view.getLineData()[0].length - 1; overallIndex >= 0; overallIndex--)
 					{
-						if(view.getLineData()[0][overallIndex].equals("OVERALL: " + result.getWord())) 
+						if(view.getLineData()[0][overallIndex].equals("OVERALL: " + result.getWord()) && result.getTime() != null) 
 						{
 							if(view.getLineData()[result.getTimeSegment() + 1][overallIndex] == null) 
 							{

@@ -69,14 +69,32 @@ public class TwitterDataDaoImpl implements TwitterDataDao {
 			{
 				for(StatePopulation stateExpected : stateResults) 
 				{
-					for(TimeSegment timeSegment : timeSegments) 
+					for(int timeSeg = 0; timeSeg < word.getSegments(); timeSeg ++) 
 					{
-						if(!wordMap.containsKey(wordExpected + stateExpected.getState() + timeSegment.getTimeSegment())) {
+						TimeSegment timeSegData = null;
+						for(TimeSegment timeSegment : timeSegments) 
+						{
+							if(timeSegment.getTimeSegment() == timeSeg) 
+							{
+								timeSegData = timeSegment;
+								break;
+							}
+						}
+						if(timeSegData == null || !wordMap.containsKey(wordExpected + stateExpected.getState() + timeSeg)) 
+						{
 							TwitterWordTimeData missingSegment = new TwitterWordTimeData();
 							missingSegment.setWord(wordExpected);
 							missingSegment.setOccurances(0);
 							missingSegment.setState(stateExpected.getState());
-							missingSegment.setTimeSegment(timeSegment.getTimeSegment());
+							missingSegment.setTimeSegment(timeSeg);
+							
+							if(timeSegData != null) {
+								missingSegment.setTime(timeSegData.getTime());
+							}
+							else {
+								missingSegment.setTime(null);
+							}
+							
 							missingSegments.add(missingSegment);
 						}
 					}

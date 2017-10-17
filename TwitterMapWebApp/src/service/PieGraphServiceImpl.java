@@ -31,7 +31,7 @@ public class PieGraphServiceImpl implements PieGraphService {
 		{
 			for(int wordIndex = 1; wordIndex < results.getLineData()[timeSegIndex].length; wordIndex++)
 			{
-				String thisState = ((String)results.getLineData()[0][wordIndex]).substring(0,  ((String)results.getLineData()[0][wordIndex]).indexOf(":"));
+				String thisState = ((String)results.getLineData()[0][wordIndex]).substring(0, ((String)results.getLineData()[0][wordIndex]).indexOf(":"));
 				if(!thisState.contains("OVERALL")) 
 				{
 					Double thisOccurances = ((Double)results.getLineData()[timeSegIndex][wordIndex]);
