@@ -33,8 +33,8 @@ public class SearchWordsController {
 	{	
 		TwitterSearchView view = new TwitterSearchView();
 		view.setLineGraphView(lineGraphService.CreateLineGraphView(query));
-		view.setMultiWordView(pieGraphService.CreatePieGraphView(query, view.getLineGraphView()));
-		view.setSingleWordView(geoChartService.CreateGeoChartView(view.getMultiWordView()));
+		view.setMultiWordView(pieGraphService.CreatePieGraphView(query));
+		view.setSingleWordView(geoChartService.CreateGeoChartView(view.getMultiWordView(), query.isPopulationControl()));
 		return view;
 		
 	}

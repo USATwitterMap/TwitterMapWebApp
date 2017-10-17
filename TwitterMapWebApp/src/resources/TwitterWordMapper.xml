@@ -10,7 +10,7 @@
 	<resultMap id = "wordTimeResult" type = "dao.results.TwitterWordTimeData">
 	   <result property = "state" column = "state"/>
 	   <result property = "word" column = "word"/>
-	   <result property = "occurances" column = "sumOccurances"/>
+	   <result property = "occurances" column = "maxOccurance"/>
 	   <result property = "timeSegment" column = "timeSegment"/>
 	</resultMap>
 
@@ -24,7 +24,7 @@
 		 and t.startTime &gt; #{startDate} and t.endTime &lt; #{stopDate} group by w.state, w.word;
    </select>
    <select id = "GetWordsByTimeByState" resultMap="wordTimeResult">
-   		select w.state as state, w.word as word, sum(occurances) as sumOccurances, 
+   		select w.state as state, w.word as word, max(occurances) as maxOccurance, 
    		TRUNCATE(TIMESTAMPDIFF(SECOND, #{startDate}, t.startTime) / (TIMESTAMPDIFF(SECOND, #{startDate}, #{stopDate}) / #{segments}), 0) as timeSegment 
    		from WordsClustered w join Times t on w.time=t.id where w.word in 
    		<foreach item="item" index="index" collection="words"

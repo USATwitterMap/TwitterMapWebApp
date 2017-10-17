@@ -11,5 +11,5 @@ import view.SingleWordView;
 
 public interface GeoChartService {
 	
-	public SingleWordView[] CreateGeoChartView(MultiWordView query);
+	public SingleWordView[] CreateGeoChartView(MultiWordView results, boolean popControl);
 }

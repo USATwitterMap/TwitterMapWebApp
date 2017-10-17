@@ -617,29 +617,57 @@
          }
          
          var options;
-         if(dashedLine == 0) {
-         options = {
-        		    hAxis: { textPosition: 'out' },
-        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
-               		title: 'Keywords Over Time',
-               		curveType: 'function',
-               		legend: { position: 'top' },
-               		lineWidth: 4,
-         		colors: [column1Color,column2Color],
-         		series: { 0 : { lineDashStyle: [10, 2]  }}
-         	 	};
-  			}
+         if($("#PopControl").is(':checked')) {
+	         if(dashedLine == 0) {
+	         options = {
+	        		    hAxis: { textPosition: 'out' },
+	        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
+	               		title: 'Keywords Over Time (Tweets per 100,000 People)',
+	               		curveType: 'function',
+	               		legend: { position: 'top' },
+	               		lineWidth: 4,
+	         		colors: [column1Color,column2Color],
+	         		series: { 0 : { lineDashStyle: [10, 2]  }}
+	         	 	};
+	  			}
+	         else {
+	         options = {
+	        		    hAxis: { textPosition: 'out' },
+	        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
+	         			title: 'Keywords Over Time (Tweets per 100,000 People)',
+	               		curveType: 'function',
+	               		legend: { position: 'top' },
+	               		lineWidth: 4,
+	         		colors: [column1Color,column2Color],
+	         	 	series: { 1 : { lineDashStyle: [10, 2]  }}
+	         	 	};
+	         }
+         }
          else {
-         options = {
-        		    hAxis: { textPosition: 'out' },
-        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
-         			title: 'Keywords Over Time',
-               		curveType: 'function',
-               		legend: { position: 'top' },
-               		lineWidth: 4,
-         		colors: [column1Color,column2Color],
-         	 	series: { 1 : { lineDashStyle: [10, 2]  }}
-         	 	};
+        	 if(dashedLine == 1) {
+        	 options = {
+	        		    hAxis: { textPosition: 'out' },
+	        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
+	               		title: 'Keywords Over Time',
+	               		curveType: 'function',
+	               		legend: { position: 'top' },
+	               		lineWidth: 4,
+	         		colors: [column1Color,column2Color],
+	         		series: { 0 : { lineDashStyle: [10, 2]  }}
+	         	 	};
+	  			}
+	         else {
+	         options = {
+	        		    hAxis: { textPosition: 'out' },
+	        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
+	         			title: 'Keywords Over Time',
+	               		curveType: 'function',
+	               		legend: { position: 'top' },
+	               		lineWidth: 4,
+	         		colors: [column1Color,column2Color],
+	         	 	series: { 1 : { lineDashStyle: [10, 2]  }}
+	         	 	};
+	         }
          }
          lineGraphView.hideColumns(disabledColumns); 
          lineGraphChart.draw(lineGraphView, options);
