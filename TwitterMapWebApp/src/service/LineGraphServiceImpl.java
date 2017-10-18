@@ -98,9 +98,17 @@ public class LineGraphServiceImpl implements LineGraphService {
 							{
 								view.getLineData()[result.getTimeSegment() + 1][overallIndex] = (double)result.getOccurances();
 							}
+							/*
 							else if(((double)view.getLineData()[result.getTimeSegment() + 1][overallIndex]) < (double)result.getOccurances())
 							{
 								view.getLineData()[result.getTimeSegment() + 1][overallIndex] = (double)result.getOccurances();
+							}
+							*/
+							else
+							{
+								view.getLineData()[result.getTimeSegment() + 1][overallIndex] = 
+										((double)view.getLineData()[result.getTimeSegment() + 1][overallIndex]) + 
+										(double)result.getOccurances();
 							}
 							break;
 						}

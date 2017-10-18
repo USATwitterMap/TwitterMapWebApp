@@ -644,7 +644,7 @@
 	         }
          }
          else {
-        	 if(dashedLine == 1) {
+        	 if(dashedLine == 0) {
         	 options = {
 	        		    hAxis: { textPosition: 'out' },
 	        		    vAxis: {viewWindowMode: 'explicit', viewWindow: { min:0 } },
